@@ -32,10 +32,12 @@ public class MainActivity extends AppCompatActivity {
                 if(isRegister){
                     Intent intent = new Intent(MainActivity.this, ChatActivity.class);
                     startActivity(intent);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                     finish();
                 }else{
                     Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
                     startActivity(intent);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                     finish();
                 }
             }},1000);

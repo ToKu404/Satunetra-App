@@ -48,6 +48,7 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
     private int first = 0;
     private boolean allowSpeech = false;
     private String name = "";
+    private boolean isUserCreated = false;
     private boolean isSpeakButtonLongPressed = false;
 
 
@@ -197,6 +198,12 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
                                 btnVoice.setEnabled(true);
                                 tvUserInput.setText("...");
                                 System.out.println("FINISH");
+                                if(isUserCreated){
+                                    allowSpeech = true;
+                                    refreshUIspeech(false);
+                                    speechRecognizer.startListening(speechIntent);
+                                    allowSpeech = true;
+                                }
                             }
                         });
                     }
@@ -212,16 +219,34 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
     }
 
     private void endOfResult(String string) {
-        name = string;
-        String repeatName = "";
-        if(first==1){
-            repeatName += getString(R.string.pra_register_speak_repeat_name) +" ";
+        if(isUserCreated){
+            if(string.equalsIgnoreCase("ya")){
+                RoomHelper helper = new RoomHelper(InputNameActivity.this);
+                Random random = new Random();
+                int id = random.nextInt(10 - 1 + 1) + 1;
+                helper.createUser(id,name);
+                Intent registerIntent = new Intent(InputNameActivity.this, ChatActivity.class);
+                startActivity(registerIntent);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                finish();
+            }else if(string.equalsIgnoreCase("tidak")){
+                finish();
+            }else {
+                String confirm = getString(R.string.pra_register_confirm_respond);
+                tvRegisterBot.setText(confirm);
+                startSpeak(confirm);
+            }
+        }else{
+            name = string;
+            String repeatName = "";
+            if(first==1){
+                repeatName += getString(R.string.pra_register_speak_repeat_name) +" ";
+            }
+            repeatName += getString(R.string.pra_register_speak_name_is) +" "+ string;
+            tvRegisterBot.setText(repeatName);
+            startSpeak(repeatName);
+            first++;
         }
-        repeatName += getString(R.string.pra_register_speak_name_is) +" "+ string;
-        tvRegisterBot.setText(repeatName);
-        startSpeak(repeatName);
-        first++;
-
     }
 
 
@@ -259,8 +284,9 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
             if(first==0){
                 first++;
                 System.out.println("Mulai Bicara");
-                speechRecognizer.startListening(speechIntent);
                 allowSpeech = true;
+                refreshUIspeech(false);
+                speechRecognizer.startListening(speechIntent);
                 return true;
             }else if(first==1){
                 refreshUIspeech(false);
@@ -296,13 +322,10 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
                     if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
                         if (diffX > 0) {
                             Log.d("AIS", "Swipe Right");
-                            RoomHelper helper = new RoomHelper(InputNameActivity.this);
-                            Random random = new Random();
-                            int id = random.nextInt(10 - 1 + 1) + 1;
-                            helper.createUser(id,name);
-                            Intent intent = new Intent(InputNameActivity.this, ChatActivity.class);
-                            startActivity(intent);
-                            finish();
+                            isUserCreated = true;
+                            String confirm = getString(R.string.pra_register_confirm) + " " + getString(R.string.pra_register_confirm_respond);
+                            tvRegisterBot.setText(confirm);
+                            startSpeak(confirm);
                         }
                         result = true;
                     }

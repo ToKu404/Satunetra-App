@@ -12,14 +12,13 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/Theme.Satunetra">
-        <activity android:name=".activities.registered.RoomActivity"></activity>
+        <activity android:name=".activities.registered.RoomActivity" />
         <activity android:name=".activities.registered.ChatActivity" />
         <activity android:name=".activities.unregistered.InputNameActivity" />
         <activity android:name=".activities.unregistered.RegisterActivity" />
-        <activity android:name=".activities.MainActivity">
+        <activity android:name=".activities.MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

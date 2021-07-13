@@ -2,6 +2,7 @@ package com.example.satunetra.activities.unregistered;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -16,6 +17,7 @@ import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.view.View;
 import android.widget.Toast;
 
 import com.example.satunetra.R;
@@ -30,11 +32,15 @@ public class RegisterActivity extends AppCompatActivity {
     private SpeechRecognizer speechRecognizer;
     private Intent speechIntent;
     private TextToSpeech tts;
+    private ConstraintLayout clConfirmNext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
+        clConfirmNext = findViewById(R.id.cl_confirm_next);
+        clConfirmNext.setEnabled(false);
 
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
@@ -42,6 +48,15 @@ public class RegisterActivity extends AppCompatActivity {
         }
         configureSpeechRecognition();
         configureTextToSpeech();
+
+        clConfirmNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                speechRecognizer.startListening(speechIntent);
+            }
+        });
+
+
         new Handler().postDelayed(new Runnable(){
             @Override
             public void run() {
@@ -61,8 +76,10 @@ public class RegisterActivity extends AppCompatActivity {
                     {
                         RegisterActivity.this.runOnUiThread(new Runnable()
                         {
+
                             public void run()
                             {
+                                clConfirmNext.setEnabled(true);
                                 speechRecognizer.startListening(speechIntent);
                             }
                         });
