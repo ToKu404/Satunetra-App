@@ -1,11 +1,10 @@
-package com.example.satunetra.activities.local;
+package com.example.satunetra.helper;
 
 import android.content.Context;
 
-import com.example.satunetra.activities.local.table.ConsulEntity;
-import com.example.satunetra.activities.local.table.UserEntity;
-import com.example.satunetra.activities.model.Consul;
-import com.example.satunetra.activities.model.User;
+import com.example.satunetra.local.AppDatabase;
+import com.example.satunetra.local.table.ConsulEntity;
+import com.example.satunetra.local.table.UserEntity;
 
 import java.util.List;
 
@@ -18,11 +17,11 @@ public class RoomHelper {
     }
 
     //read user
-    public User readUser(){
+    public UserEntity readUser(){
         return roomDb.userDao().getUser();
     }
 
-    public List<Consul> readHistory(){
+    public List<ConsulEntity> readHistory(){
         return roomDb.userDao().getHistory();
     }
 

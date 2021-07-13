@@ -1,4 +1,4 @@
-package com.example.satunetra.activities.local;
+package com.example.satunetra.local;
 
 import android.content.Context;
 
@@ -6,9 +6,10 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-import com.example.satunetra.activities.local.dao.UserDao;
-import com.example.satunetra.activities.local.table.ConsulEntity;
-import com.example.satunetra.activities.local.table.UserEntity;
+
+import com.example.satunetra.local.dao.UserDao;
+import com.example.satunetra.local.table.ConsulEntity;
+import com.example.satunetra.local.table.UserEntity;
 
 
 @Database(entities = {UserEntity.class, ConsulEntity.class}, version = 2, exportSchema = false)

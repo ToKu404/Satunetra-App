@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:background="@color/white"
     android:layout_height="match_parent"
-    tools:context=".activities.praregisted.InputNameActivity">
+    tools:context=".activities.unregistered.InputNameActivity">
     <LinearLayout
         android:id="@+id/ll_input_name"
         android:layout_width="match_parent"
@@ -38,6 +38,7 @@
                 android:src="@drawable/ic_baseline_record_voice_over_24"
                 app:tint="@color/white"/>
             <TextView
+                android:id="@+id/tv_register_bot"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
@@ -66,16 +67,25 @@
             app:tint="@color/mainBlue"
             />
         <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/iv_is_speech"
             android:layout_width="150dp"
             android:layout_marginTop="10dp"
-            android:layout_height="wrap_content"
+            android:layout_height="100dp"
             android:src="@drawable/sound"
+            android:visibility="gone"
             />
+        <ImageView
+            android:id="@+id/iv_not_speech"
+            android:layout_width="119dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_not_speech"
+            android:layout_marginTop="10dp"/>
         <TextView
             android:id="@+id/tv_user_input"
+            android:paddingHorizontal="20dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/app_name"
+            android:text="@string/none"
             android:textColor="@color/textGray"
             android:textSize="18sp"
             android:maxLines="4"

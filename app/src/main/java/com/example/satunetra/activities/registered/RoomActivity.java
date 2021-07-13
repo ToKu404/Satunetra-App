@@ -1,4 +1,4 @@
-package com.example.satunetra.activities.praregisted;
+package com.example.satunetra.activities.registered;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -6,13 +6,11 @@ import android.os.Bundle;
 
 import com.example.satunetra.R;
 
-public class InputNameActivity extends AppCompatActivity {
+public class RoomActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_input_name);
-
-
+        setContentView(R.layout.activity_room);
     }
 }

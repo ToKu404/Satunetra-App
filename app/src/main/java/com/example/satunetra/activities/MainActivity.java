@@ -5,10 +5,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.View;
+import android.widget.LinearLayout;
 
 import com.example.satunetra.R;
-import com.example.satunetra.activities.local.RoomHelper;
-import com.example.satunetra.activities.praregisted.RegisterActivity;
+import com.example.satunetra.activities.registered.ChatActivity;
+import com.example.satunetra.activities.unregistered.RegisterActivity;
+import com.example.satunetra.helper.RoomHelper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         roomHelper = new RoomHelper(this);
 
         isRegister = roomHelper.isUserExist();
@@ -26,7 +30,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if(isRegister){
-
+                    Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                    startActivity(intent);
+                    finish();
                 }else{
                     Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
                     startActivity(intent);

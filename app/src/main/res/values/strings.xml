@@ -1,12 +1,14 @@
 <resources>
     <string name="app_name">Satunetra</string>
+    <string name="none">...</string>
     <string name="app_title_top">SATU</string>
     <string name="app_title_bottom">NETRA</string>
 
-    <string name="pra_register_welcome">"Selamat datang di Aplikasi Satunetra ucapkan Lanjutkan untuk mendaftar"</string>
+    <string name="pra_register_welcome">"Selamat datang di Aplikasi Satunetra. Ucapkan Lanjutkan untuk mendaftar"</string>
 
     <string name="pra_register_input_name">"Halaman ini merupakan halaman registrasi. Silahkan masukkan nama anda dengan menekan bagian tengah layar smartphone anda kemudian ucapkan nama anda"</string>
-    <string name="pra_register_speak_name">Saya akan mengulangi penyebutan nama anda, jika sudah benar usap layar dari kiri ke kanan, jika masih salah tekan dan tahan bagian tengah layar. Nama anda adalah </string>
+    <string name="pra_register_speak_repeat_name">Saya akan mengulangi penyebutan nama anda, jika sudah benar usap layar dari kiri ke kanan, jika masih salah, tekan dan tahan bagian tengah layar, </string>
+    <string name="pra_register_speak_name_is">Nama anda adalah </string>
     <string name="pra_register_confirm">Sebelum melanutakan pengguanaan Aplikasi, saya akan menjelaskan tentang panduan penggunaan terlebih dahulu. Setelah intruksi panduan ini berakhir kamu akan dialihkan ke halaman awal konsultasi, kamu dapat menceritakan apapun yang ingin kamu ceritakan mulai dari bagaimana harimu hari ini?, atau kamu dapat langsung bertanya tentang kondisi mental yang kamu rasakan saat ini, kami akan berusaha memberikan solusi yang tepat untuk mengatasi kecemasan, stress, kehilangan percaya diri, dan insomnia. ucapkan "YA" jika kamu ingin melanjutkan, dan "TIDAK" jika ingin menutup aplikasi setelah nada bip</string>
 
     <string name="ID_Assistent">e428521a-22a1-42a2-b2b4-2208c1d962e5</string>

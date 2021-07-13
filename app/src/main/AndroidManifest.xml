@@ -12,10 +12,10 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/Theme.Satunetra">
-        <activity android:name=".activities.preregisted.RoomActivity"></activity>
-        <activity android:name=".activities.preregisted.ChatActivity" />
-        <activity android:name=".activities.praregisted.InputNameActivity" />
-        <activity android:name=".activities.praregisted.RegisterActivity" />
+        <activity android:name=".activities.registered.RoomActivity"></activity>
+        <activity android:name=".activities.registered.ChatActivity" />
+        <activity android:name=".activities.unregistered.InputNameActivity" />
+        <activity android:name=".activities.unregistered.RegisterActivity" />
         <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

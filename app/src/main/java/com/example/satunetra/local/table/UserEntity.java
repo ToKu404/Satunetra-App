@@ -1,4 +1,4 @@
-package com.example.satunetra.activities.local.table;
+package com.example.satunetra.local.table;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
