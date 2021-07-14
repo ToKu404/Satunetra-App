@@ -49,7 +49,7 @@
         android:id="@+id/tv_register"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/pra_register_welcome"
+
         app:layout_constraintTop_toBottomOf="@id/ll_register"
         app:layout_constraintStart_toStartOf="@id/ll_register"
         app:layout_constraintEnd_toEndOf="@id/ll_register"

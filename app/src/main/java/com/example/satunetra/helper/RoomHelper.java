@@ -21,6 +21,15 @@ public class RoomHelper {
         return roomDb.userDao().getUser();
     }
 
+    public boolean firstTake(int id){
+        roomDb.userDao().firstTake(true, id).subscribe(()->{
+            status = true;
+        }, throwable -> {
+            status = false;
+        });
+        return status;
+    }
+
     public List<ConsulEntity> readHistory(){
         return roomDb.userDao().getHistory();
     }

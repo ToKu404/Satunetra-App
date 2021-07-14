@@ -19,6 +19,9 @@ public interface UserDao {
     @Query("Select * FROM user_entity Limit 1")
     UserEntity getUser();
 
+    @Query("UPDATE user_entity SET first=:value WHERE id = :id")
+    Completable firstTake(boolean value, int id);
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     Completable createUser(UserEntity user);
 

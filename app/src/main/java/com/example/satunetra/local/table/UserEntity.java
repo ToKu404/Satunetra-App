@@ -14,6 +14,9 @@ public class UserEntity implements Serializable {
     @ColumnInfo(name = "name")
     private String name;
 
+    @ColumnInfo(name = "first")
+    private Boolean first;
+
     public int getId() {
         return id;
     }
@@ -30,9 +33,18 @@ public class UserEntity implements Serializable {
         this.name = name;
     }
 
+    public Boolean getFirst() {
+        return first;
+    }
+
+    public void setFirst(Boolean first) {
+        this.first = first;
+    }
+
     public UserEntity(int id, String name) {
         this.id = id;
         this.name = name;
+        this.first = false;
     }
 }
 

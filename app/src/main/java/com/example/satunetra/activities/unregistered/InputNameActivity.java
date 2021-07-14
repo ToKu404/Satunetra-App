@@ -1,11 +1,8 @@
 package com.example.satunetra.activities.unregistered;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.view.GestureDetectorCompat;
-import androidx.room.RoomDatabase;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,11 +25,17 @@ import com.example.satunetra.activities.registered.ChatActivity;
 import com.example.satunetra.helper.RoomHelper;
 import com.example.satunetra.helper.SpeechHelper;
 import com.example.satunetra.helper.VoiceHelper;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Locale;
+import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 import pl.droidsonroids.gif.GifImageView;
 
@@ -44,6 +47,7 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
     private GifImageView ivIsSpeech;
     private GestureDetector mGestureDetector;
     private ImageView ivNotSpeech, ivMic;
+    private List<String> messageList;
     private TextView tvUserInput, tvRegisterBot;
     private int first = 0;
     private boolean allowSpeech = false;
@@ -57,9 +61,6 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_input_name);
 
-        configureTTS();
-        configureSpeechRecognition();
-
 
         //define layout
         btnVoice = findViewById(R.id.btn_gestur_voice);
@@ -68,7 +69,16 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
         ivNotSpeech = findViewById(R.id.iv_not_speech);
         tvUserInput = findViewById(R.id.tv_user_input);
         tvRegisterBot = findViewById(R.id.tv_register_bot);
+        messageList = new ArrayList<>();
         mGestureDetector = new GestureDetector(this, new GestureListener());
+
+        //configure
+        readData();
+        configureTTS();
+        configureSpeechRecognition();
+
+
+
 
         //set onclick
         btnVoice.setEnabled(false);
@@ -78,8 +88,29 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
         new Handler().postDelayed(new Runnable(){
             @Override
             public void run() {
-                startSpeak(getString(R.string.pra_register_input_name));
+                if(messageList!=null){
+                    startSpeak(messageList.get(0));
+                }
             }},500);
+    }
+
+    private void readData() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference reference = database.getReference("bot_message");
+        reference.child("register").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                for(int i=0;i<snapshot.getChildrenCount();i++){
+                    messageList.add(snapshot.child(String.valueOf(i+1)).getValue(String.class));
+                }
+                tvRegisterBot.setText(messageList.get(0));
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
     }
 
     private class MyRecognitionListener implements RecognitionListener {
@@ -232,17 +263,16 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
             }else if(string.equalsIgnoreCase("tidak")){
                 finish();
             }else {
-                String confirm = getString(R.string.pra_register_confirm_respond);
-                tvRegisterBot.setText(confirm);
-                startSpeak(confirm);
+                tvRegisterBot.setText(messageList.get(4));
+                startSpeak(messageList.get(4));
             }
         }else{
             name = string;
             String repeatName = "";
             if(first==1){
-                repeatName += getString(R.string.pra_register_speak_repeat_name) +" ";
+                repeatName += messageList.get(1) +" ";
             }
-            repeatName += getString(R.string.pra_register_speak_name_is) +" "+ string;
+            repeatName += messageList.get(2) +" "+ string;
             tvRegisterBot.setText(repeatName);
             startSpeak(repeatName);
             first++;
@@ -323,7 +353,7 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
                         if (diffX > 0) {
                             Log.d("AIS", "Swipe Right");
                             isUserCreated = true;
-                            String confirm = getString(R.string.pra_register_confirm) + " " + getString(R.string.pra_register_confirm_respond);
+                            String confirm = messageList.get(3) + " " + messageList.get(4);
                             tvRegisterBot.setText(confirm);
                             startSpeak(confirm);
                         }

@@ -12,18 +12,24 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.satunetra.R;
-import com.example.satunetra.activities.MainActivity;
 import com.example.satunetra.helper.SpeechHelper;
 import com.example.satunetra.helper.VoiceHelper;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
@@ -32,7 +38,9 @@ public class RegisterActivity extends AppCompatActivity {
     private SpeechRecognizer speechRecognizer;
     private Intent speechIntent;
     private TextToSpeech tts;
+    private TextView tvRegister;
     private ConstraintLayout clConfirmNext;
+    private String bot_message = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +48,9 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         clConfirmNext = findViewById(R.id.cl_confirm_next);
+        tvRegister = findViewById(R.id.tv_register);
         clConfirmNext.setEnabled(false);
-
+        readData();
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.RECORD_AUDIO}, 1);
@@ -56,12 +65,6 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
-
-        new Handler().postDelayed(new Runnable(){
-            @Override
-            public void run() {
-                startSpeak(getString(R.string.pra_register_welcome));
-            }},500);
 
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
             @Override
@@ -90,6 +93,28 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onError(String utteranceId) {
+
+            }
+        });
+    }
+
+    private void readData() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference reference = database.getReference("bot_message");
+        reference.child("welcome").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                bot_message = snapshot.child("1").getValue(String.class);
+                tvRegister.setText(bot_message);
+                new Handler().postDelayed(new Runnable(){
+                    @Override
+                    public void run() {
+                        startSpeak(bot_message);
+                    }},500);
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
 
             }
         });

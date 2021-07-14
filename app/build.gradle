@@ -3,13 +3,19 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
+repositories {
+    maven {
+        url  "https://dl.bintray.com/ibm-cloud-sdks/ibm-cloud-sdk-repo"
+    }
+}
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.example.satunetra"
-        minSdkVersion 17
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -35,6 +41,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'org.jetbrains:annotations:15.0'
+    implementation 'com.google.firebase:firebase-database:20.0.0'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     implementation 'androidx.multidex:multidex:2.0.1'
@@ -46,4 +53,8 @@ dependencies {
     implementation "androidx.room:room-runtime:2.3.0"
     implementation "androidx.room:room-rxjava3:2.3.0"
     annotationProcessor "androidx.room:room-compiler:2.3.0"
+
+
+    implementation 'com.ibm.watson:assistant:8.5.0'
+    implementation 'com.ibm.watson.developer_cloud:android-sdk:0.6.0'
 }
