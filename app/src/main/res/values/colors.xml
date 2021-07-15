@@ -2,7 +2,9 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="bubbleBlue">#FF9993FF</color>
+    <color name="bubbleGray">#FFE8E8E8</color>
     <color name="mainBlue">#FF110E43</color>
-    <color name="bgBlue">#FF373469</color>
+    <color name="bgBlue">#FFD2D1EB</color>
     <color name="textGray">#868891</color>
 </resources>

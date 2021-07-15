@@ -8,20 +8,10 @@ public class Message implements Serializable {
     String url;
     String title;
     String description;
-    LocalDateTime dateTime;
+    String time;
 
     public Message(){
 
-    }
-
-
-    public Message(String title, String description, String url, LocalDateTime dateTime){
-        this.message = "";
-        this.title = title;
-        this.description = description;
-        this.url = url;
-        this.id = "2";
-        this.dateTime = dateTime;
     }
 
     public String getId() {
@@ -64,11 +54,11 @@ public class Message implements Serializable {
         this.description = description;
     }
 
-    public LocalDateTime getDateTime() {
-        return dateTime;
+    public String getTime() {
+        return time;
     }
 
-    public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = dateTime;
+    public void setTime(String time) {
+        this.time = time;
     }
 }

@@ -4,34 +4,38 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:gravity="right"
-    android:orientation="horizontal"
-    android:paddingBottom="5dp">
-    <ImageView
-        android:id="@+id/iv_user_item"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_gravity="end"
-        app:tint="@color/white"
-        android:src="@drawable/ic_baseline_person_24" />
+    android:layout_marginTop="10dp"
+    android:orientation="horizontal">
+
     <TextView
         android:id="@+id/tv_message"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/iv_user_item"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_width="0dp"
+        app:layout_constraintWidth_default="wrap"
+        app:layout_constraintHorizontal_bias="1"
+        android:text="asdsad asdsa asdas a asdsa asdsa sadsa adas asdsa asdsa asdsa"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="5dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="5dp"
         android:layout_marginBottom="10dp"
-        android:paddingLeft="10dp"
+        android:paddingHorizontal="10dp"
         android:paddingVertical="10dp"
-        android:paddingRight="20dp"
         android:autoLink="web"
         android:background="@drawable/bg_bubble_user"
         android:textColor="@color/black"
         android:textIsSelectable="true"
         android:textSize="13sp"/>
+    <TextView
+        android:id="@+id/tv_current_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tv_message"
+        app:layout_constraintEnd_toEndOf="@id/tv_message"
+        android:layout_marginRight="5dp"
+        android:text="09:00"
+        android:textSize="10sp"
+        android:textColor="@color/textGray"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

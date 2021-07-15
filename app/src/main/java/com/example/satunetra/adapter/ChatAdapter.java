@@ -13,6 +13,8 @@ import com.example.satunetra.model.Message;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
@@ -42,7 +44,11 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull @NotNull ChatAdapter.ViewHolder holder, int position) {
         Message message = messageList.get(position);
         holder.message.setText(message.getMessage());
+        String time = new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime());
+        message.setTime(time);
+        holder.currentTime.setText(message.getTime());
     }
+
 
     @Override
     public int getItemViewType(int position) {
@@ -60,9 +66,11 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView message;
+        TextView currentTime;
         public ViewHolder(View v) {
             super(v);
             message = v.findViewById(R.id.tv_message);
+            currentTime = v.findViewById(R.id.tv_current_time);
         }
     }
 }

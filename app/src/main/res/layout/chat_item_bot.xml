@@ -4,33 +4,39 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:paddingBottom="5dp"
+    android:layout_marginTop="10dp"
     android:orientation="horizontal">
-
-    <ImageView
-        android:id="@+id/iv_bot_item"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        app:tint="@color/white"
-        android:src="@drawable/ic_baseline_record_voice_over_24" />
 
     <TextView
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/iv_bot_item"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:id="@+id/tv_message"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constrainedWidth="true"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="5dp"
-        android:layout_marginTop="5dp"
+        android:text="asdas
+asdsa
+asdas"
         android:paddingLeft="20dp"
+        android:paddingRight="10dp"
         android:paddingVertical="10dp"
         android:autoLink="web"
         android:background="@drawable/bg_bubble_bot"
         android:textColor="@color/black"
         android:textIsSelectable="true"
         android:textSize="13sp" />
+    <TextView
+        android:id="@+id/tv_current_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tv_message"
+        app:layout_constraintEnd_toEndOf="@id/tv_message"
+        android:layout_marginRight="5dp"
+        android:text="09:00"
+        android:textSize="10sp"
+        android:textColor="@color/textGray"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
