@@ -77,21 +77,17 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
         configureTTS();
         configureSpeechRecognition();
 
-
-
-
         //set onclick
         btnVoice.setEnabled(false);
         btnVoice.setOnTouchListener(this);
 
-
         new Handler().postDelayed(new Runnable(){
             @Override
             public void run() {
-                if(messageList!=null){
+                if(messageList.size()>0 && messageList!=null){
                     startSpeak(messageList.get(0));
                 }
-            }},500);
+            }},700);
     }
 
     private void readData() {
@@ -114,9 +110,6 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
     }
 
     private class MyRecognitionListener implements RecognitionListener {
-        public void endOfSpeech(){
-            onEndOfSpeech();
-        }
 
         @Override
         public void onReadyForSpeech(Bundle params) {
@@ -166,6 +159,7 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
                 endOfResult(string);
             }else if(first<=1 & matches == null){
                 first = 0;
+                speechRecognizer.startListening(speechIntent);
             }
             tvUserInput.setText(string);
         }

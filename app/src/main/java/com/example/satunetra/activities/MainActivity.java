@@ -8,6 +8,7 @@ import android.os.Handler;
 
 import com.example.satunetra.R;
 import com.example.satunetra.activities.registered.ChatActivity;
+import com.example.satunetra.activities.registered.RoomActivity;
 import com.example.satunetra.activities.unregistered.RegisterActivity;
 import com.example.satunetra.helper.RoomHelper;
 

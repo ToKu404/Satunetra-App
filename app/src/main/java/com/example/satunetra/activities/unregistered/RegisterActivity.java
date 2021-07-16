@@ -110,7 +110,7 @@ public class RegisterActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         startSpeak(bot_message);
-                    }},500);
+                    }},1000);
             }
 
             @Override

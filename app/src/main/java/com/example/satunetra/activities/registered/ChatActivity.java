@@ -55,6 +55,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import pl.droidsonroids.gif.GifImageView;
@@ -73,6 +74,7 @@ public class ChatActivity extends AppCompatActivity {
     private String name;
     private boolean initalRequest;
     private boolean firstInit = false;
+    private boolean isTimer = false;
 
     private TextToSpeech tts;
     private SpeechRecognizer speechRecognizer;
@@ -83,9 +85,11 @@ public class ChatActivity extends AppCompatActivity {
     private ImageView ivNotSpeech, ivMic, ivTimer;
     private Map<String, String> feelTag;
     private String feelKey = "a00";
+    private boolean afterInstruction = false;
     private String instructionKey = "";
     private boolean letsPlay = false;
     private ArrayList<String> instructionTag;
+    private Thread timeThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,13 +111,23 @@ public class ChatActivity extends AppCompatActivity {
         btnStartChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                speechRecognizer.startListening(speechIntent);
-                refreshUIspeech(false, true);
+                if(isTimer==false){
+                    speechRecognizer.startListening(speechIntent);
+                    refreshUIspeech(false, true);
+                }else {
+                    timeThread.interrupt();
+                    isTimer=false;
+                    letsPlay = false;
+                    startSpeak("Proses Dibatalkan");
+                    llVoiceChat.setVisibility(View.VISIBLE);
+                    llTiming.setVisibility(View.GONE);
+                }
+
             }
         });
         readData();
         feelTag = new HashMap<>();
-        String[] instruction = {"podcast","musik","music","meditasi"};
+        String[] instruction = {"podcasts","music","meditasi"};
         instructionTag = new ArrayList<>(Arrays.asList(instruction));
 
         //instance
@@ -130,24 +144,22 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(chatAdapter);
         name = userEntity.getName();
-
-        if(userEntity.getFirst()==false){
-            helper.firstTake(userEntity.getId());
-            firstInit = true;
-            System.out.println("TRUE");
-        }
-
         initalRequest = true;
+
         createServices();
         configureSpeechRecognition();
         configureTTS();
-
-        if(firstInit==false){
+        if(userEntity.getFirst()==false){
+            helper.firstTake(userEntity.getId());
             userMessage = "";
             sendMessage();
             firstInit = true;
         }
-
+        if(firstInit==false) {
+            userMessage = "";
+            sendMessage();
+            firstInit = true;
+        }
 
     }
 
@@ -291,11 +303,24 @@ public class ChatActivity extends AppCompatActivity {
     private void loadPlayData() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference reference = database.getReference(instructionKey);
-        reference.child("1").child("link").addListenerForSingleValueEvent(new ValueEventListener() {
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                Toast.makeText(ChatActivity.this, snapshot.getValue(String.class), Toast.LENGTH_SHORT).show();
-                letsPlaying();
+                int randomNum = 1;
+                int randomNum2 = 2;
+                if(snapshot.getChildrenCount()>2){
+                    Random rand = new Random();
+                    randomNum = rand.nextInt((int) ((snapshot.getChildrenCount() - 1) + 1)) + 1;
+                    do{
+                        randomNum2 = rand.nextInt((int) ((snapshot.getChildrenCount() - 1) + 1)) + 1;
+                    }while (randomNum==randomNum2);
+                }
+                String link1, link2, title1, title2;
+                link1 = snapshot.child(String.valueOf(randomNum)).child("link").getValue(String.class);
+                link2 = snapshot.child(String.valueOf(randomNum2)).child("link").getValue(String.class);
+                title1 = snapshot.child(String.valueOf(randomNum)).child("title").getValue(String.class);
+                title2 = snapshot.child(String.valueOf(randomNum2)).child("title").getValue(String.class);
+                letsPlaying(link1, link2, title1, title2, instructionKey);
             }
 
             @Override
@@ -305,13 +330,63 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void letsPlaying() {
+    @Override
+    protected void onStart() {
+        isTimer = false;
+        letsPlay = false;
+        llVoiceChat.setVisibility(View.VISIBLE);
+        llTiming.setVisibility(View.GONE);
+        if(afterInstruction==true){
+            userMessage = "#!";
+            sendMessage();
+        }
+        super.onStart();
+    }
+
+    private void letsPlaying(String link1, String link2, String title1, String title2, String instructionKey) {
         llVoiceChat.setVisibility(View.GONE);
         llTiming.setVisibility(View.VISIBLE);
+        isTimer = true;
+
+        timeThread = new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                    try {
+                        int i = 10;
+                        while (!Thread.currentThread().isInterrupted()&&i>0){
+                            int finalI = i;
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    tvTimer.setText(String.valueOf(finalI)+" detik");
+                                }
+                            });
+                            i--;
+                            sleep(1000);
+                        }
+                        if(!Thread.currentThread().isInterrupted()){
+                            Intent playIntent = new Intent(ChatActivity.this, RoomActivity.class);
+                            playIntent.putExtra("link1", link1);
+                            playIntent.putExtra("link2", link2);
+                            playIntent.putExtra("title1", title1);
+                            playIntent.putExtra("title2", title2);
+                            playIntent.putExtra("type", instructionKey);
+                            afterInstruction = true;
+                            startActivity(playIntent);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+            }
+        };
+        timeThread.start();
     }
 
     private void startSpeak(String string) {
         System.out.println(string);
+        btnStartChat.setEnabled(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             tts.speak(string, TextToSpeech.QUEUE_ADD, null, "text");
         }
@@ -325,7 +400,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void sendMessage() {
-//        final String inputmessage = inputMessage.trim();
         if(!initalRequest){
             System.out.println("Initial Request");
             Message inputMessage = new Message();
@@ -387,6 +461,7 @@ public class ChatActivity extends AppCompatActivity {
                                 feelKey = feelTag.get(tag);
                             }
                             if(instructionTag.contains(tag)){
+                                afterInstruction = false;
                                letsPlay = true;
                                instructionKey = tag;
                             }
