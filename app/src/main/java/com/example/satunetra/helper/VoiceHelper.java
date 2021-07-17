@@ -18,7 +18,8 @@ public class VoiceHelper{
             @Override
             public void onInit(int status) {
                 if(status==TextToSpeech.SUCCESS) {
-                    int result = tts.setLanguage(Locale.getDefault());
+//                    int result = tts.setLanguage(Locale.getDefault());
+                    int result = tts.setLanguage(new Locale("id","ID"));
                     tts.setSpeechRate(1);
                     tts.setPitch(1);
                     if(result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED){

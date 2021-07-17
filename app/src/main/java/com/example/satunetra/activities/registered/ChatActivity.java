@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
@@ -28,6 +29,7 @@ import com.example.satunetra.helper.SpeechHelper;
 import com.example.satunetra.helper.VoiceHelper;
 import com.example.satunetra.local.table.UserEntity;
 import com.example.satunetra.model.Message;
+import com.example.satunetra.model.Tag;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -83,13 +85,14 @@ public class ChatActivity extends AppCompatActivity {
     private TextView tvUserChat, tvTimer;
     private GifImageView ivIsSpeech;
     private ImageView ivNotSpeech, ivMic, ivTimer;
-    private Map<String, String> feelTag;
-    private String feelKey = "a00";
+    private String botTagNow = "none";
     private boolean afterInstruction = false;
     private String instructionKey = "";
+    private String feelKey = "";
     private boolean letsPlay = false;
-    private ArrayList<String> instructionTag;
-    private Thread timeThread;
+    private Map<String, Tag> tagMap;
+//    private List<Tag> tags;
+    private List<String> test;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +110,7 @@ public class ChatActivity extends AppCompatActivity {
         tvTimer = findViewById(R.id.tv_time);
         ivTimer = findViewById(R.id.iv_timing);
 
+
         btnStartChat.setEnabled(false);
         btnStartChat.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,8 +119,8 @@ public class ChatActivity extends AppCompatActivity {
                     speechRecognizer.startListening(speechIntent);
                     refreshUIspeech(false, true);
                 }else {
-                    timeThread.interrupt();
-                    isTimer=false;
+                    if(cTimer!=null)
+                        cTimer.cancel();
                     letsPlay = false;
                     startSpeak("Proses Dibatalkan");
                     llVoiceChat.setVisibility(View.VISIBLE);
@@ -126,9 +130,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
         readData();
-        feelTag = new HashMap<>();
-        String[] instruction = {"podcasts","music","meditasi"};
-        instructionTag = new ArrayList<>(Arrays.asList(instruction));
+
 
         //instance
         helper = new RoomHelper(this);
@@ -165,13 +167,30 @@ public class ChatActivity extends AppCompatActivity {
 
 
     private void readData() {
+
+        tagMap=new HashMap<>();
+//        String[] inst1 = {"b01","b02"};
+//        ArrayList<String> instruksi1 = new ArrayList<>(Arrays.asList(inst1));
+//        String[] inst2 = {"b03","b04"};
+//        ArrayList<String> instruksi2 = new ArrayList<>(Arrays.asList(inst2));
+//        tags.put("a01", instruksi1);
+//        tags.put("a02", instruksi1);
+//        tags.put("a03", instruksi2);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference reference = database.getReference("tags");
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+
                 for(DataSnapshot s : snapshot.getChildren()){
-                    feelTag.put(s.getValue(String.class).toLowerCase(), s.getKey());
+                    Tag value = new Tag();
+                    value.setValue(s.child("value").getValue(String.class));
+                    value.setChild((HashMap<String, String>)s.child("child").getValue());
+                    Toast.makeText(ChatActivity.this, "" + s.getValue(),
+                            Toast.LENGTH_LONG).show();
+                    tagMap.put(s.getKey(), value);
+//                    for(DataSnapshot c: s.child(s.getKey()).child("child"))
+//                    feelTag.put(s.getValue(String.class).toLowerCase(), s.getKey());
                 }
             }
 
@@ -205,13 +224,13 @@ public class ChatActivity extends AppCompatActivity {
 
         @Override
         public void onEndOfSpeech() {
-            refreshUIspeech(false, true);
+            refreshUIspeech(false, false);
             speechRecognizer.stopListening();
         }
 
         @Override
         public void onError(int error) {
-
+            refreshUIspeech(false, false);
         }
 
         @Override
@@ -283,6 +302,7 @@ public class ChatActivity extends AppCompatActivity {
                             {
                                 btnStartChat.setEnabled(true);
                                 tvUserChat.setText("...");
+                                refreshUIspeech(false, false);
                                 if(letsPlay){
                                     loadPlayData();
                                 }
@@ -306,21 +326,17 @@ public class ChatActivity extends AppCompatActivity {
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                int randomNum = 1;
-                int randomNum2 = 2;
-                if(snapshot.getChildrenCount()>2){
-                    Random rand = new Random();
-                    randomNum = rand.nextInt((int) ((snapshot.getChildrenCount() - 1) + 1)) + 1;
-                    do{
-                        randomNum2 = rand.nextInt((int) ((snapshot.getChildrenCount() - 1) + 1)) + 1;
-                    }while (randomNum==randomNum2);
-                }
-                String link1, link2, title1, title2;
-                link1 = snapshot.child(String.valueOf(randomNum)).child("link").getValue(String.class);
-                link2 = snapshot.child(String.valueOf(randomNum2)).child("link").getValue(String.class);
-                title1 = snapshot.child(String.valueOf(randomNum)).child("title").getValue(String.class);
-                title2 = snapshot.child(String.valueOf(randomNum2)).child("title").getValue(String.class);
-                letsPlaying(link1, link2, title1, title2, instructionKey);
+//                while (test.size()<6||test.size()<=snapshot.getChildrenCount()){
+//                    Random rand = new Random();
+//                    int randomNum = rand.nextInt((int) ((snapshot.getChildrenCount() - 1) + 1)) + 1;
+                    String tempLink = snapshot.child(String.valueOf(1)).child("link").getValue(String.class);
+                    String tempLink2 = snapshot.child(String.valueOf(2)).child("link").getValue(String.class);
+//                    if(!test.contains(tempLink)){
+                        test.add(tempLink);
+                        test.add(tempLink2);
+//                    }
+//                }
+                letsPlaying();
             }
 
             @Override
@@ -332,7 +348,9 @@ public class ChatActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        isTimer = false;
+        test = new ArrayList<String>();
+        if(cTimer!=null)
+            cTimer.cancel();
         letsPlay = false;
         llVoiceChat.setVisibility(View.VISIBLE);
         llTiming.setVisibility(View.GONE);
@@ -342,46 +360,29 @@ public class ChatActivity extends AppCompatActivity {
         }
         super.onStart();
     }
+    private CountDownTimer cTimer = null;
 
-    private void letsPlaying(String link1, String link2, String title1, String title2, String instructionKey) {
+    private void letsPlaying() {
         llVoiceChat.setVisibility(View.GONE);
         llTiming.setVisibility(View.VISIBLE);
-        isTimer = true;
-
-        timeThread = new Thread(){
+        isTimer=true;
+        cTimer = new CountDownTimer(5000, 1000) {
             @Override
-            public void run() {
-                super.run();
-                    try {
-                        int i = 10;
-                        while (!Thread.currentThread().isInterrupted()&&i>0){
-                            int finalI = i;
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    tvTimer.setText(String.valueOf(finalI)+" detik");
-                                }
-                            });
-                            i--;
-                            sleep(1000);
-                        }
-                        if(!Thread.currentThread().isInterrupted()){
-                            Intent playIntent = new Intent(ChatActivity.this, RoomActivity.class);
-                            playIntent.putExtra("link1", link1);
-                            playIntent.putExtra("link2", link2);
-                            playIntent.putExtra("title1", title1);
-                            playIntent.putExtra("title2", title2);
-                            playIntent.putExtra("type", instructionKey);
-                            afterInstruction = true;
-                            startActivity(playIntent);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            public void onTick(long millisUntilFinished) {
+                String time = String.valueOf(millisUntilFinished / 1000);
+                tvTimer.setText(time+" detik");
+            }
 
+            @Override
+            public void onFinish() {
+                Intent playIntent = new Intent(ChatActivity.this, RoomActivity.class);
+                playIntent.putStringArrayListExtra("link", (ArrayList<String>) test);
+                playIntent.putExtra("type", tagMap.get(feelKey).getChildName(instructionKey));
+                cTimer.cancel();
+                startActivity(playIntent);
             }
         };
-        timeThread.start();
+        cTimer.start();
     }
 
     private void startSpeak(String string) {
@@ -399,7 +400,12 @@ public class ChatActivity extends AppCompatActivity {
         watsonAssistant.setServiceUrl(getString(R.string.URL_Assistent));
     }
 
+    private int countRequest = 0;
     private void sendMessage() {
+        if(!(countRequest==0||!userMessage.equals(""))){
+            return;
+        }
+
         if(!initalRequest){
             System.out.println("Initial Request");
             Message inputMessage = new Message();
@@ -431,16 +437,17 @@ public class ChatActivity extends AppCompatActivity {
                     System.out.println("Response Create");
                     Response<MessageResponse> response = watsonAssistant.message(options).execute();
                     if(response != null && response.getResult().getOutput() != null && !response.getResult().getOutput().getGeneric().isEmpty()){
+
                         List<RuntimeResponseGeneric> responses = response.getResult().getOutput().getGeneric();
-                        String tag = "";
-                        if(response.getResult().getOutput().getIntents().size()>0){
-                            tag = response.getResult().getOutput().getIntents().get(0).intent();
+                        if(response.getResult().getOutput().getIntents().size()==1){
+                            botTagNow = response.getResult().getOutput().getIntents().get(0).intent();
+                            System.out.println(botTagNow);
                         }
                         for(RuntimeResponseGeneric r : responses){
                             String botMessage = r.text();
                             System.out.println(botMessage);
                             if(botMessage.substring(0,1).equals("#")){
-                                String[] greetings = botMessage.substring(1,botMessage.length()).split(",");
+                                String[] greetings = botMessage.substring(1,botMessage.length()).split("#");
                                 int hour = 0;
                                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                                     hour = LocalDateTime.now().getHour();
@@ -457,13 +464,19 @@ public class ChatActivity extends AppCompatActivity {
                                 }
                                 botMessage += greetings[4];
                             }
-                            if(feelTag.containsKey(tag)){
-                                feelKey = feelTag.get(tag);
+
+                            if(tagMap.containsKey(botTagNow.trim())){
+                               feelKey = botTagNow;
+                               System.out.println(botTagNow);
                             }
-                            if(instructionTag.contains(tag)){
+                            if(tagMap.get(feelKey)!=null && tagMap.get(feelKey).childEquals(botTagNow.trim())){
                                 afterInstruction = false;
                                letsPlay = true;
-                               instructionKey = tag;
+                               instructionKey = botTagNow;
+                                System.out.println(instructionKey);
+                            }
+                            if(botTagNow.equals("tidak")){
+                                System.out.println("SIAP "+botTagNow);
                             }
                             if(userMessage.equals("")){
                                 botMessage = String.format(botMessage, name);

@@ -21,6 +21,8 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+
 import pl.droidsonroids.gif.GifImageView;
 
 public class RoomActivity extends AppCompatActivity implements View.OnTouchListener {
@@ -35,6 +37,7 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
     private int sesi = 1;
     private boolean isPlay = false;
     private String type;
+    private ArrayList<String> links;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,14 +53,14 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
         roomName = findViewById(R.id.tv_room_name);
         titleInstruction = findViewById(R.id.tv_room_title);
 
+        links = getIntent().getStringArrayListExtra("test");
         type = getIntent().getStringExtra("type");
-        if(type.equals("meditasi")){
+        if(type.equals("b03")||type.equals("b04")){
             gifImageView.setImageResource(R.drawable.meditasi);
-        }else if(type.equals("music")){
+        }else {
             gifImageView.setImageResource(R.drawable.music);
-        }else if(type.equals("podcasts")){
-            gifImageView.setImageResource(R.drawable.podcast);
         }
+        roomName.setText("MEDITASI");
 
         getLifecycle().addObserver(ypvRoom);
 
@@ -69,8 +72,7 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
             @Override
             public void onReady(@NotNull YouTubePlayer youTubePlayer) {
                 player = youTubePlayer;
-                playVideo(getIntent().getStringExtra("link1"));
-                titleInstruction.setText(getIntent().getStringExtra("title1"));
+                playVideo();
                 super.onReady(youTubePlayer);
             }
 
@@ -80,10 +82,9 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
             public void onStateChange(@NotNull YouTubePlayer youTubePlayer, PlayerConstants.@NotNull PlayerState state)
             {
                 if(state == PlayerConstants.PlayerState.ENDED){
-                    if(sesi==1){
+                    if(sesi<=links.size()){
                         sesi++;
-                        playVideo(getIntent().getStringExtra("link2"));
-                        titleInstruction.setText(getIntent().getStringExtra("title2"));
+                        playVideo();
                     }else{
                         onBackPressed();
                     }
@@ -135,10 +136,9 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
                 if (Math.abs(diffX) > Math.abs(diffY)) {
                     if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
                         if (diffX > 0) {
-                            if(sesi==1){
+                            if(sesi<=links.size()){
                                 sesi++;
-                                playVideo(getIntent().getStringExtra("link2"));
-                                titleInstruction.setText(getIntent().getStringExtra("title2"));
+                                playVideo();
                             }else{
                                 Toast.makeText(RoomActivity.this, "INI SESI TERAKHIR", Toast.LENGTH_SHORT).show();
                             }
@@ -160,8 +160,9 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
         }
     }
 
-    private void playVideo(String link){
-        roomName.setText("SESI "+ type.toUpperCase() + String.valueOf(sesi));
+    private void playVideo(){
+        String link = links.get(sesi-1);
+        titleInstruction.setText("SESI "+sesi);
         player.pause();
         player.loadVideo(link,0);
         player.play();
