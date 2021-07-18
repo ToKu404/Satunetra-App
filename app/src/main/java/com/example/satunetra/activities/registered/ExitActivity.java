@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
@@ -28,6 +29,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 
 import org.jetbrains.annotations.NotNull;
@@ -39,6 +42,9 @@ public class ExitActivity extends AppCompatActivity {
     private TextToSpeech tts;
     private TextView tvRegister;
     private String bot_message = "";
+    private SpeechRecognizer speechRecognizer;
+    private Intent speechIntent;
+    private boolean exitNow = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +52,8 @@ public class ExitActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         tvRegister = findViewById(R.id.tv_register);
-        readData();
 
+        configureSpeechRecognition();
         configureTextToSpeech();
 
 
@@ -68,12 +74,16 @@ public class ExitActivity extends AppCompatActivity {
 
                             public void run()
                             {
-                                new Handler().postDelayed(new Runnable(){
-                                    @Override
-                                    public void run() {
-                                        System.exit(1);
-                                        finish();
-                                    }},3000);
+                                if(exitNow){
+                                    new Handler().postDelayed(new Runnable(){
+                                        @Override
+                                        public void run() {
+                                            System.exit(1);
+                                            finish();
+                                        }},3000);
+                                }else{
+                                    speechRecognizer.startListening(speechIntent);
+                                }
                             }
                         });
                     }
@@ -86,10 +96,22 @@ public class ExitActivity extends AppCompatActivity {
 
             }
         });
+
+        beriUlasan();
+    }
+
+    private void beriUlasan() {
+        bot_message = "Sebelum keluar dari aplikasi ini kami sangat mengharapkan anda memberikan ulasan mengenai aplikasi ini, seperti bagaimana perasaan anda setelah konsultasi, mohon beri ulasan setelah nada bip";
+        tvRegister.setText("Ulasan");
+        new Handler().postDelayed(new Runnable(){
+            @Override
+            public void run() {
+                startSpeak(bot_message);
+            }},300);
     }
 
     private void readData() {
-        bot_message = "Aplikasi satunetra akan menutup dalam 3 detik, sampai jumpa lagi";
+        bot_message = "Terima kasih, Aplikasi satunetra akan menutup dalam 3 detik, sampai jumpa lagi";
         tvRegister.setText(bot_message);
         new Handler().postDelayed(new Runnable(){
             @Override
@@ -110,5 +132,83 @@ public class ExitActivity extends AppCompatActivity {
     private void configureTextToSpeech() {
         VoiceHelper helper = new VoiceHelper(this);
         tts = helper.getTts();
+    }
+
+    private class MyRecognitionListener implements RecognitionListener {
+        @Override
+        public void onReadyForSpeech(Bundle params) {
+
+        }
+
+        @Override
+        public void onBeginningOfSpeech() {
+
+        }
+
+        @Override
+        public void onRmsChanged(float rmsdB) {
+
+        }
+
+        @Override
+        public void onBufferReceived(byte[] buffer) {
+
+        }
+
+        @Override
+        public void onEndOfSpeech() {
+            speechRecognizer.stopListening();
+        }
+
+        @Override
+        public void onError(int error) {
+
+        }
+
+        @Override
+        public void onResults(Bundle results) {
+            ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+            String string = "...";
+            if(matches!=null) {
+                string = matches.get(0);
+                tvRegister.setText(string);
+                simpanUlasan(string);
+            }
+        }
+
+        @Override
+        public void onPartialResults(Bundle partialResults) {
+
+        }
+
+        @Override
+        public void onEvent(int eventType, Bundle params) {
+        }
+    }
+
+    private void simpanUlasan(String string) {
+        exitNow = true;
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference reference = database.getReference("ulasan");
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                reference.child(String.valueOf(snapshot.getChildrenCount())+1).setValue(string);
+                readData();
+            }
+
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void configureSpeechRecognition() {
+        SpeechHelper helper = new SpeechHelper(this, 300);
+        speechRecognizer = helper.getSpeechRecognizer();
+        speechIntent = helper.getSpeechIntent();
+        speechRecognizer.setRecognitionListener(new ExitActivity.MyRecognitionListener());
     }
 }

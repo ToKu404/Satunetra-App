@@ -9,6 +9,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,8 +33,9 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
     private GestureDetector mGestureDetector;
     private ConstraintLayout btnGesture;
     private ImageView ivPause;
-    private GifImageView gifImageView;
     private YouTubePlayer player;
+    private ProgressBar pbRoom;
+    private LinearLayout llRoom;
     private TextView roomName, titleInstruction;
     private int sesi = 1;
     private boolean isPlay = false;
@@ -49,18 +52,19 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
         ypvRoom = findViewById(R.id.ypv_room);
         btnGesture = findViewById(R.id.btn_gestur_room);
         ivPause = findViewById(R.id.iv_not_speech_chat);
-        gifImageView = findViewById(R.id.iv_is_speech_chat);
         roomName = findViewById(R.id.tv_room_name);
         titleInstruction = findViewById(R.id.tv_room_title);
 
-        links = getIntent().getStringArrayListExtra("test");
+        llRoom = findViewById(R.id.ll_voice_chat);
+        pbRoom = findViewById(R.id.pb_room);
+
+        pbRoom.setVisibility(View.VISIBLE);
+        llRoom.setVisibility(View.GONE);
+
+        links = getIntent().getStringArrayListExtra("link");
         type = getIntent().getStringExtra("type");
-        if(type.equals("b03")||type.equals("b04")){
-            gifImageView.setImageResource(R.drawable.meditasi);
-        }else {
-            gifImageView.setImageResource(R.drawable.music);
-        }
-        roomName.setText("MEDITASI");
+
+        roomName.setText(type.toUpperCase());
 
         getLifecycle().addObserver(ypvRoom);
 
@@ -68,10 +72,13 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
 
         ypvRoom.getPlayerUiController();
 
+
         ypvRoom.addYouTubePlayerListener(new AbstractYouTubePlayerListener() {
             @Override
             public void onReady(@NotNull YouTubePlayer youTubePlayer) {
                 player = youTubePlayer;
+                pbRoom.setVisibility(View.GONE);
+                llRoom.setVisibility(View.VISIBLE);
                 playVideo();
                 super.onReady(youTubePlayer);
             }

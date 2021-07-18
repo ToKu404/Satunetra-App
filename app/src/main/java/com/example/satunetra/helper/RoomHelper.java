@@ -30,8 +30,14 @@ public class RoomHelper {
         return status;
     }
 
-    public List<ConsulEntity> readHistory(){
-        return roomDb.userDao().getHistory();
+    public String readHistory(){
+        String temp = "Berikut Riwayat Konsultasi Anda : \n";
+        for(ConsulEntity riwayat : roomDb.userDao().getHistory()){
+            temp += riwayat.getDate() + " ";
+            temp += "Anda Merasa " + riwayat.getFeel();
+            temp += " Dan Kami memutarkan Anda " + riwayat.getInstruction() + " .\n";
+        }
+        return temp;
     }
 
     public boolean isUserExist(){
@@ -49,8 +55,8 @@ public class RoomHelper {
         return status;
     }
 
-    public boolean insertConsul(int id, String tag, String date){
-        ConsulEntity consul = new ConsulEntity(id, tag,date);
+    public boolean insertConsul(String instruction, String feel, String date){
+        ConsulEntity consul = new ConsulEntity(instruction,feel, date);
         roomDb.userDao().addConsul(consul).subscribe(() -> {
             status = true;
         }, throwable -> {

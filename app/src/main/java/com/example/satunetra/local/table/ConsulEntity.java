@@ -9,14 +9,41 @@ import java.io.Serializable;
 
 @Entity(tableName = "consul_entity")
 public class ConsulEntity implements Serializable {
-    @PrimaryKey
-    private int id;
+    @PrimaryKey(autoGenerate = true)
+    private int id = 0;
 
-    @ColumnInfo(name = "tag")
-    private String tag;
+    @ColumnInfo(name = "instruction")
+    private String instruction;
+
+    @ColumnInfo(name = "feel")
+    private String feel;
 
     @ColumnInfo(name = "date")
-    private String data;
+    private String date;
+
+    public String getInstruction() {
+        return instruction;
+    }
+
+    public void setInstruction(String instruction) {
+        this.instruction = instruction;
+    }
+
+    public String getFeel() {
+        return feel;
+    }
+
+    public void setFeel(String feel) {
+        this.feel = feel;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
 
     public int getId() {
         return id;
@@ -26,25 +53,9 @@ public class ConsulEntity implements Serializable {
         this.id = id;
     }
 
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
-
-    public String getData() {
-        return data;
-    }
-
-    public void setData(String data) {
-        this.data = data;
-    }
-
-    public ConsulEntity(int id, String tag, String data) {
-        this.id = id;
-        this.tag = tag;
-        this.data = data;
+    public ConsulEntity(String instruction, String feel, String date) {
+        this.instruction = instruction;
+        this.date = date;
+        this.feel = feel;
     }
 }
