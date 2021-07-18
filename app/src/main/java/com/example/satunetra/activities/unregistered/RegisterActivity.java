@@ -35,37 +35,101 @@ import java.util.ArrayList;
 
 public class RegisterActivity extends AppCompatActivity {
 
+    //deklarasi
     private SpeechRecognizer speechRecognizer;
     private Intent speechIntent;
     private TextToSpeech tts;
     private TextView tvRegister;
     private ConstraintLayout clConfirmNext;
-    private String bot_message = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        //mengatur layout
         clConfirmNext = findViewById(R.id.cl_confirm_next);
         tvRegister = findViewById(R.id.tv_register);
+
+        //membaca data dari firebase
         clConfirmNext.setEnabled(false);
         readData();
 
+        //mengecek izin record audio
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.RECORD_AUDIO}, 1);
         }
+
+        //memanggil konfigurasi SR dan TTS
         configureSpeechRecognition();
         configureTextToSpeech();
 
+        //mengatur on click listener
         clConfirmNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //jika ditekan maka SR akan mulai mendengarkan
                 speechRecognizer.startListening(speechIntent);
             }
         });
+    }
+
+    private void readData() {
+        //membaca data dari firebase yang ada pada bot_message
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference reference = database.getReference("bot_message");
+        reference.child("welcome").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                String bot_message = snapshot.child("1").getValue(String.class);
+                tvRegister.setText(bot_message);
+                //delay 1 detik kemudian mulai TTS untuk bot_message
+                new Handler().postDelayed(new Runnable(){
+                    @Override
+                    public void run() {
+                        startSpeak(bot_message);
+                    }},1000);
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
+    }
 
 
+    private void startSpeak(String string) {
+        //mengubah teks jadi suara
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            tts.speak(string, TextToSpeech.QUEUE_ADD, null, "text");
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        configureSpeechRecognition();
+    }
+
+    @Override
+    public void onDestroy() {
+        // Mematikan TTS dan SP
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+        if (speechRecognizer != null){
+            speechRecognizer.stopListening();
+            speechRecognizer.destroy();
+        }
+        super.onDestroy();
+    }
+
+    private void configureTextToSpeech() {
+        //konfigurasi tts
+        VoiceHelper helper = new VoiceHelper(this);
+        tts = helper.getTts();
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
             @Override
             public void onStart(String utteranceId) {
@@ -77,6 +141,7 @@ public class RegisterActivity extends AppCompatActivity {
                 {
                     public void run()
                     {
+                        //ketika tts selesai maka SR akan otomtasi dimulai
                         RegisterActivity.this.runOnUiThread(new Runnable()
                         {
 
@@ -98,65 +163,12 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    private void readData() {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference reference = database.getReference("bot_message");
-        reference.child("welcome").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                bot_message = snapshot.child("1").getValue(String.class);
-                tvRegister.setText(bot_message);
-                new Handler().postDelayed(new Runnable(){
-                    @Override
-                    public void run() {
-                        startSpeak(bot_message);
-                    }},1000);
-            }
-
-            @Override
-            public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-            }
-        });
-    }
-
-
-    private void startSpeak(String string) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            tts.speak(string, TextToSpeech.QUEUE_ADD, null, "text");
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        configureSpeechRecognition();
-    }
-
-    @Override
-    public void onDestroy() {
-        // Don't forget to shutdown!
-        if (tts != null) {
-            tts.stop();
-            tts.shutdown();
-        }
-        if (speechRecognizer != null){
-            speechRecognizer.stopListening();
-            speechRecognizer.destroy();
-        }
-        super.onDestroy();
-    }
-
-    private void configureTextToSpeech() {
-        VoiceHelper helper = new VoiceHelper(this);
-        tts = helper.getTts();
-    }
-
     private void configureSpeechRecognition() {
+        //instanca SR
         SpeechHelper helper = new SpeechHelper(this, 200);
-
         speechRecognizer = helper.getSpeechRecognizer();
         speechIntent = helper.getSpeechIntent();
+        //mengatur Listener SR
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
             public void onReadyForSpeech(Bundle params) {
@@ -190,6 +202,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onResults(Bundle results) {
+                //mengirim result
                 ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 String string = "";
                 if(matches!=null){
@@ -214,12 +227,15 @@ public class RegisterActivity extends AppCompatActivity {
         String[] sub = string.toLowerCase().split(" ");
         for(String subString : sub){
             System.out.println(subString);
+            //Jika string yang diucapkan adalah lanjutkan
             if(subString.equals("lanjutkan")){
                 Intent openResult = new Intent(RegisterActivity.this, InputNameActivity.class);
                 startActivity(openResult);
                 finish();
                 break;
-            }else{
+            }
+            //jika bukan otomatis mulai ulang SR
+            else{
                 speechRecognizer.startListening(speechIntent);
             }
         }

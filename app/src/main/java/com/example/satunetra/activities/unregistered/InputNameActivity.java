@@ -40,6 +40,7 @@ import java.util.Random;
 import pl.droidsonroids.gif.GifImageView;
 
 public class InputNameActivity extends AppCompatActivity implements View.OnTouchListener{
+    //declaration of widget
     private TextToSpeech tts;
     private LinearLayout btnVoice;
     private SpeechRecognizer speechRecognizer;
@@ -49,11 +50,17 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
     private ImageView ivNotSpeech, ivMic;
     private List<String> messageList;
     private TextView tvUserInput, tvRegisterBot;
-    private int first = 0;
-    private boolean allowSpeech = false;
-    private String name = "";
-    private boolean isUserCreated = false;
-    private boolean isSpeakButtonLongPressed = false;
+
+    //declaration of variabel
+    private int first;
+    private boolean allowSpeech;
+    private String name;
+    private boolean isUserCreated;
+    private boolean isSpeakButtonLongPressed;
+
+    //const
+    private static final int SWIPE_THRESHOLD = 100;
+    private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 
 
     @Override
@@ -72,12 +79,21 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
         messageList = new ArrayList<>();
         mGestureDetector = new GestureDetector(this, new GestureListener());
 
-        //configure
+        //set default value of variabel
+        first = 0;
+        allowSpeech = false;
+        name = "";
+        isUserCreated = false;
+        isSpeakButtonLongPressed = false;
+
+        //read a db from firebase
         readData();
+
+        //configurasi TTS and SR
         configureTTS();
         configureSpeechRecognition();
 
-        //set onclick
+        //set onclick and ontouch
         btnVoice.setEnabled(false);
         btnVoice.setOnTouchListener(this);
 
@@ -90,6 +106,7 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
             }},700);
     }
 
+    //read data from firebase for all message of bot
     private void readData() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference reference = database.getReference("bot_message");
@@ -109,6 +126,7 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
         });
     }
 
+    //class Listener
     private class MyRecognitionListener implements RecognitionListener {
 
         @Override
@@ -118,6 +136,7 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
 
         @Override
         public void onBeginningOfSpeech() {
+            //refresh UI
             refreshUIspeech(true);
             tvUserInput.setText("Bicara..");
         }
@@ -134,7 +153,7 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
 
         @Override
         public void onEndOfSpeech() {
-            System.out.println("END OF SPEECH");
+            //refresh UI and stop listening
             refreshUIspeech(false);
             speechRecognizer.stopListening();
         }
@@ -146,12 +165,16 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
 
         @Override
         public void onResults(Bundle results) {
+            //refresh UI
             refreshUIspeech(false);
             allowSpeech = false;
             refreshUIspeech(false);
+
+            //read for result
             ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             String string = "...";
             if(matches!=null){
+                //if result is none, first value set to 0
                 if(first<=1 && matches.equals("")){
                     first = 0;
                 }
@@ -177,6 +200,7 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
 
 
     private void configureSpeechRecognition() {
+        //Instance SR
         SpeechHelper helper = new SpeechHelper(this, 300);
         speechRecognizer = helper.getSpeechRecognizer();
         speechIntent = helper.getSpeechIntent();
@@ -199,9 +223,9 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
     }
 
     private void configureTTS() {
+        //Instance TTS
         VoiceHelper voiceHelper = new VoiceHelper(this);
         tts = voiceHelper.getTts();
-
 
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
             @Override
@@ -219,10 +243,11 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
                         {
                             public void run()
                             {
-                                Toast.makeText(getBaseContext(), "TTS Completed", Toast.LENGTH_SHORT).show();
+                                //when tts is done for speak
                                 btnVoice.setEnabled(true);
                                 tvUserInput.setText("...");
-                                System.out.println("FINISH");
+
+                                //if is user is created
                                 if(isUserCreated){
                                     allowSpeech = true;
                                     refreshUIspeech(false);
@@ -289,10 +314,11 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
                 allowSpeech = false;
                 refreshUIspeech(false);
                 speechRecognizer.stopListening();
-                Toast.makeText(InputNameActivity.this, "Stop Listening",Toast.LENGTH_SHORT).show();
                 isSpeakButtonLongPressed = false;
             }
         }
+
+        //set gesture detector for a widget
         if(v.getId() == R.id.btn_gestur_voice){
             mGestureDetector.onTouchEvent(event);
             return true;
@@ -305,9 +331,9 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
+            //if first 0 or 1 user can tell her name using single tap
             if(first==0){
                 first++;
-                System.out.println("Mulai Bicara");
                 allowSpeech = true;
                 refreshUIspeech(false);
                 speechRecognizer.startListening(speechIntent);
@@ -324,28 +350,27 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
 
         @Override
         public void onLongPress(MotionEvent e) {
+            //but if first>1 user must be long press to tell her name
             if(first>1){
                 isSpeakButtonLongPressed = true;
-                System.out.println("Mulai Bicara");
                 speechRecognizer.startListening(speechIntent);
                 allowSpeech = true;
                 refreshUIspeech(false);
             }
 
         }
-        private static final int SWIPE_THRESHOLD = 100;
-        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-
+            //on swipe
             boolean result = false;
             try {
                 float diffY = e2.getY() - e1.getY();
                 float diffX = e2.getX() - e1.getX();
                 if (Math.abs(diffX) > Math.abs(diffY)) {
                     if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        //swipe from left to right
                         if (diffX > 0) {
-                            Log.d("AIS", "Swipe Right");
                             isUserCreated = true;
                             String confirm = messageList.get(3) + " " + messageList.get(4);
                             tvRegisterBot.setText(confirm);

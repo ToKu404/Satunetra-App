@@ -17,9 +17,7 @@
         app:layout_constrainedWidth="true"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="5dp"
-        android:text="asdas
-asdsa
-asdas"
+        android:text="asdas"
         android:paddingLeft="20dp"
         android:paddingRight="10dp"
         android:paddingVertical="10dp"

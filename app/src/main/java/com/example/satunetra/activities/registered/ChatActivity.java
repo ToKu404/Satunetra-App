@@ -3,7 +3,6 @@ package com.example.satunetra.activities.registered;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.StateSet;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,7 +26,6 @@ import com.example.satunetra.adapter.ChatAdapter;
 import com.example.satunetra.helper.RoomHelper;
 import com.example.satunetra.helper.SpeechHelper;
 import com.example.satunetra.helper.VoiceHelper;
-import com.example.satunetra.local.table.ConsulEntity;
 import com.example.satunetra.local.table.UserEntity;
 import com.example.satunetra.model.Message;
 import com.example.satunetra.model.Tag;
@@ -49,10 +47,7 @@ import com.ibm.watson.assistant.v2.model.SessionResponse;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;

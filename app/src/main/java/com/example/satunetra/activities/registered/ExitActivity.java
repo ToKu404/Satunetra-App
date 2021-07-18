@@ -190,20 +190,22 @@ public class ExitActivity extends AppCompatActivity {
         exitNow = true;
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference reference = database.getReference("ulasan");
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                reference.child(String.valueOf(snapshot.getChildrenCount())+1).setValue(string);
-                readData();
-            }
-
-
-            @Override
-            public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-            }
-        });
+        int id = 1;
+//        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+//                id = snapshot.getChildrenCount()+1;
+//
+//            }
+//
+//
+//            @Override
+//            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+//
+//            }
+//        });
     }
+
 
     private void configureSpeechRecognition() {
         SpeechHelper helper = new SpeechHelper(this, 300);
