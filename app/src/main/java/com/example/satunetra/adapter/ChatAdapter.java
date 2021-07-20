@@ -18,8 +18,8 @@ import java.util.Calendar;
 import java.util.List;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
-    private List<Message> messageList;
-    private int SELF = 100;
+    private final List<Message> messageList;
+    private final int SELF = 100;
 
     public ChatAdapter(List<Message> messageList) {
         this.messageList = messageList;
@@ -64,7 +64,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         return messageList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView message;
         TextView currentTime;
         public ViewHolder(View v) {

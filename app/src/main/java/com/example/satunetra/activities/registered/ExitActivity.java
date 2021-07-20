@@ -117,7 +117,7 @@ public class ExitActivity extends AppCompatActivity {
             @Override
             public void run() {
                 startSpeak(bot_message);
-            }},300);
+            }},3000);
 
     }
 
@@ -190,20 +190,13 @@ public class ExitActivity extends AppCompatActivity {
         exitNow = true;
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference reference = database.getReference("ulasan");
-        int id = 1;
-//        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-//                id = snapshot.getChildrenCount()+1;
-//
-//            }
-//
-//
-//            @Override
-//            public void onCancelled(@NonNull @NotNull DatabaseError error) {
-//
-//            }
-//        });
+        reference.push().setValue(string);
+        new Handler().postDelayed(new Runnable(){
+            @Override
+            public void run() {
+                readData();
+            }},300);
+
     }
 
 

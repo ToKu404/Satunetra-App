@@ -1,4 +1,4 @@
-package com.example.satunetra.activities.registered;
+ package com.example.satunetra.activities.registered;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -70,7 +70,6 @@ public class ChatActivity extends AppCompatActivity {
 
     //for local db
     private RoomHelper helper;
-    private UserEntity userEntity;
 
     //for chat and watson
     private Assistant watsonAssistant;
@@ -109,8 +108,6 @@ public class ChatActivity extends AppCompatActivity {
     private boolean isTimer;
     //is tts speek or not
     private boolean nowSpeak;
-    //is user first init or not
-    private boolean firstInit;
     //is music ready to play
     private boolean letsPlay;
     //after instruction of music tag
@@ -142,7 +139,8 @@ public class ChatActivity extends AppCompatActivity {
         //set initial value
         afterInstruction = false;
         exitNow = false;
-        firstInit = false;
+        //is user first init or not
+        boolean firstInit = false;
         isTimer = false;
         readyToExit = false;
         nowSpeak = false;
@@ -182,7 +180,7 @@ public class ChatActivity extends AppCompatActivity {
 
         //instance
         helper = new RoomHelper(this);
-        userEntity = helper.readUser();
+        UserEntity userEntity = helper.readUser();
 
 
         //setting message
@@ -201,13 +199,13 @@ public class ChatActivity extends AppCompatActivity {
         configureSpeechRecognition();
         configureTTS();
 
-        if(userEntity.getFirst()==false){
+        if(!userEntity.getFirst()){
             helper.firstTake(userEntity.getId());
             userMessage = "";
             sendMessage();
             firstInit = true;
         }
-        if(firstInit==false) {
+        if(!firstInit) {
             userMessage = "";
             sendMessage();
             firstInit = true;
@@ -331,7 +329,12 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onStart(String utteranceId) {
                 nowSpeak = true;
-               btnStartChat.setEnabled(true);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        btnStartChat.setEnabled(true);
+                    }
+                });
             }
 
             @Override
@@ -349,9 +352,10 @@ public class ChatActivity extends AppCompatActivity {
                                 tvUserChat.setText("...");
                                 refreshSpeechUI(false, false);
                                 if(letsPlay){
+                                    System.out.println("Lets Play");
                                     loadPlayData();
                                 }
-                                }
+                            }
                         });
                     }
                 }.start();
@@ -373,12 +377,11 @@ public class ChatActivity extends AppCompatActivity {
                                 if(readyToExit){
                                     if(exitNow){
                                         System.exit(0);
-                                        finish();
                                     }else{
                                         Intent readyToExit = new Intent(ChatActivity.this, ExitActivity.class);
                                         startActivity(readyToExit);
-                                        finish();
                                     }
+                                    finish();
                                 }else{
                                     btnStartChat.setEnabled(true);
                                     tvUserChat.setText("...");
@@ -454,7 +457,7 @@ public class ChatActivity extends AppCompatActivity {
         letsPlay = false;
         llVoiceChat.setVisibility(View.VISIBLE);
         llTiming.setVisibility(View.GONE);
-        if(afterInstruction==true){
+        if(afterInstruction){
             saveConsultationHistory();
             userMessage = "#selesai";
             sendMessage();
@@ -524,23 +527,18 @@ public class ChatActivity extends AppCompatActivity {
             public void run() {
                 try {
                     if(watsonAssistantSession == null){
-                        System.out.println("Session Null");
                         ServiceCall<SessionResponse> call = watsonAssistant.createSession(new CreateSessionOptions.Builder().assistantId(getString(R.string.ID_Assistent)).build());
                         watsonAssistantSession = call.execute();
                     }
                     MessageInput input = new MessageInput.Builder().text(userMessage).build();
-                    System.out.println("PENTING "+ userMessage);
 
                     MessageOptions options = new MessageOptions.Builder().assistantId(getString(R.string.ID_Assistent)).input(input).sessionId(watsonAssistantSession.getResult().getSessionId()).build();
-                    System.out.println("Response Create");
                     Response<MessageResponse> response = watsonAssistant.message(options).execute();
                     if(response != null && response.getResult().getOutput() != null && !response.getResult().getOutput().getGeneric().isEmpty()){
 
                         List<RuntimeResponseGeneric> responses = response.getResult().getOutput().getGeneric();
-                        System.out.println("KURA " + response.getResult());
                         if(response.getResult().getOutput().getIntents().size()==1){
                             botTagNow = response.getResult().getOutput().getIntents().get(0).intent();
-                            System.out.println(botTagNow);
                         }
                         for(RuntimeResponseGeneric r : responses){
                             String botMessage = r.text();
@@ -558,10 +556,9 @@ public class ChatActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            System.out.println("Update UI");
                             chatAdapter.notifyDataSetChanged();
                             if(chatAdapter.getItemCount()>1){
-                                recyclerView.getLayoutManager().smoothScrollToPosition(recyclerView, null, chatAdapter.getItemCount()-1);
+                                recyclerView.getLayoutManager().smoothScrollToPosition(recyclerView, new RecyclerView.State(), chatAdapter.getItemCount());
                             }
                         }
                     });
@@ -582,7 +579,6 @@ public class ChatActivity extends AppCompatActivity {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 hour = LocalDateTime.now().getHour();
             }
-            System.out.println(hour);
             if(hour>5 && hour<12){
                 tempMessage = greetings[0];
             }else if(hour>=12 && hour<15){
@@ -595,27 +591,27 @@ public class ChatActivity extends AppCompatActivity {
             tempMessage += greetings[4];
         }
         if(afterInstruction){
-            if(botTagNow.equals("ya")){
-                afterInstruction=false;
-            }else if(botTagNow.equals("riwayat")){
-                //show history
-                String historyText = helper.readHistory();
-                tempMessage = historyText;
-            }else if(botTagNow.equals("tidak")){
-                System.out.println("Keluar ini");
-                exitNow = false;
-                readyToExit = true;
+            switch (botTagNow) {
+                case "ya":
+                    afterInstruction = false;
+                    break;
+                case "riwayat":
+                    //show history
+                    tempMessage = helper.readHistory();
+                    break;
+                case "tidak":
+                    exitNow = false;
+                    readyToExit = true;
+                    break;
             }
         }
 
         if(tagMap.containsKey(botTagNow.trim())){
             feelKey = botTagNow;
-            System.out.println(botTagNow);
         }
         if(tagMap.get(feelKey)!=null && tagMap.get(feelKey).childEquals(botTagNow.trim())){
             letsPlay = true;
             instructionKey = botTagNow;
-            System.out.println(instructionKey);
         }
 //                            if(!feelKey.equals("")&&botTagNow.equals("tidak")){
 //                                exitNow = true;

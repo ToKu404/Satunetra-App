@@ -29,30 +29,27 @@ import pl.droidsonroids.gif.GifImageView;
 
 public class RoomActivity extends AppCompatActivity implements View.OnTouchListener {
 
-    private YouTubePlayerView ypvRoom;
     private GestureDetector mGestureDetector;
-    private ConstraintLayout btnGesture;
     private ImageView ivPause;
     private YouTubePlayer player;
     private ProgressBar pbRoom;
     private LinearLayout llRoom;
-    private TextView roomName, titleInstruction;
+    private TextView titleInstruction;
     private int sesi = 1;
     private boolean isPlay = false;
-    private String type;
     private ArrayList<String> links;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room);
 
-        btnGesture = findViewById(R.id.btn_gestur_room);
+        ConstraintLayout btnGesture = findViewById(R.id.btn_gestur_room);
         mGestureDetector = new GestureDetector(this, new GestureListener());
 
-        ypvRoom = findViewById(R.id.ypv_room);
+        YouTubePlayerView ypvRoom = findViewById(R.id.ypv_room);
         btnGesture = findViewById(R.id.btn_gestur_room);
         ivPause = findViewById(R.id.iv_not_speech_chat);
-        roomName = findViewById(R.id.tv_room_name);
+        TextView roomName = findViewById(R.id.tv_room_name);
         titleInstruction = findViewById(R.id.tv_room_title);
 
         llRoom = findViewById(R.id.ll_voice_chat);
@@ -62,7 +59,7 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
         llRoom.setVisibility(View.GONE);
 
         links = getIntent().getStringArrayListExtra("link");
-        type = getIntent().getStringExtra("type");
+        String type = getIntent().getStringExtra("type");
 
         roomName.setText(type.toUpperCase());
 
@@ -119,7 +116,7 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
             //pause
             if(player!=null){
                 System.out.println("PAUSE");
-               if(isPlay==true){
+               if(isPlay){
                    isPlay = false;
                    player.pause();
                    ivPause.setImageResource(R.drawable.ic_baseline_play_circle_filled_24);
