@@ -116,11 +116,6 @@
             android:src="@drawable/ic_baseline_pause_circle_filled_24"
             android:layout_marginTop="10dp"
             app:tint="@color/mainBlue" />
-        <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-            android:id="@+id/ypv_room"
-            android:layout_width="wrap_content"
-            android:visibility="gone"
-            android:layout_height="wrap_content" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

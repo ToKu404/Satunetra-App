@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import pl.droidsonroids.gif.GifImageView;
 
@@ -157,7 +158,7 @@ public class ChatActivity extends AppCompatActivity {
         btnStartChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(isTimer==false){
+                if(!isTimer){
                     if(nowSpeak){
                         tts.stop();
                         nowSpeak = false;
@@ -169,6 +170,8 @@ public class ChatActivity extends AppCompatActivity {
                     if(cTimer!=null)
                         cTimer.cancel();
                     letsPlay = false;
+                    initalRequest = true;
+                    isTimer = false;
                     startSpeak("Proses Dibatalkan");
                     llVoiceChat.setVisibility(View.VISIBLE);
                     llTiming.setVisibility(View.GONE);
@@ -188,6 +191,7 @@ public class ChatActivity extends AppCompatActivity {
         chatAdapter = new ChatAdapter(messageArrayList);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
+        recyclerView.smoothScrollToPosition(chatAdapter.getItemCount()-1);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(chatAdapter);
@@ -278,7 +282,6 @@ public class ChatActivity extends AppCompatActivity {
             String string = "...";
             if(matches!=null) {
                 string = matches.get(0);
-
                     userMessage = string;
                     sendMessage();
                     tvUserChat.setText(string);
@@ -352,7 +355,6 @@ public class ChatActivity extends AppCompatActivity {
                                 tvUserChat.setText("...");
                                 refreshSpeechUI(false, false);
                                 if(letsPlay){
-                                    System.out.println("Lets Play");
                                     loadPlayData();
                                 }
                             }
@@ -386,6 +388,12 @@ public class ChatActivity extends AppCompatActivity {
                                     btnStartChat.setEnabled(true);
                                     tvUserChat.setText("...");
                                     refreshSpeechUI(false, false);
+                                    if(initalRequest){
+                                        userMessage = "";
+                                        instructionKey = "";
+                                        feelKey = "";
+                                        sendMessage();
+                                    }
                                     if(letsPlay){
                                         loadPlayData();
                                     }
@@ -408,7 +416,7 @@ public class ChatActivity extends AppCompatActivity {
     //save consultation history
     private void saveConsultationHistory() {
         Calendar calendar = Calendar.getInstance();
-        String date = calendar.get(Calendar.DATE) + ", " ;
+        String date = calendar.get(Calendar.DATE) + " " ;
         date += calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, new Locale("id", "ID")) + " ";
         date += String.valueOf(calendar.get(Calendar.YEAR));
 
@@ -459,6 +467,7 @@ public class ChatActivity extends AppCompatActivity {
         llTiming.setVisibility(View.GONE);
         if(afterInstruction){
             saveConsultationHistory();
+            initalRequest = true;
             userMessage = "#selesai";
             sendMessage();
         }
@@ -507,21 +516,14 @@ public class ChatActivity extends AppCompatActivity {
     //send Message
     private void sendMessage() {
             if(!initalRequest){
-
                 Message inputMessage = new Message();
                 inputMessage.setMessage(userMessage);
                 inputMessage.setId("1");
                 messageArrayList.add(inputMessage);
+                updateRecycler();
             }else{
-
-                Message inputMessage = new Message();
-                inputMessage.setMessage(userMessage);
-                inputMessage.setId("100");
                 initalRequest = false;
             }
-            chatAdapter.notifyDataSetChanged();
-
-
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -556,10 +558,7 @@ public class ChatActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            chatAdapter.notifyDataSetChanged();
-                            if(chatAdapter.getItemCount()>1){
-                                recyclerView.getLayoutManager().smoothScrollToPosition(recyclerView, new RecyclerView.State(), chatAdapter.getItemCount());
-                            }
+                            updateRecycler();
                         }
                     });
                 }catch (Exception e){
@@ -568,6 +567,14 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
         thread.start();
+    }
+
+    private void updateRecycler() {
+        chatAdapter.notifyDataSetChanged();
+//        if(chatAdapter.getItemCount()>1){
+//            Objects.requireNonNull(recyclerView.getLayoutManager()).scrollToPosition(chatAdapter.getItemCount()-1);
+////            Objects.requireNonNull(recyclerView.getLayoutManager()).smoothScrollToPosition(recyclerView, new RecyclerView.State(), chatAdapter.getItemCount()-1);
+//        }
     }
 
     //configure bot message edit

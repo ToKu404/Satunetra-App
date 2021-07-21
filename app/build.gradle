@@ -58,5 +58,4 @@ dependencies {
     implementation 'com.ibm.watson:assistant:8.5.0'
     implementation 'com.ibm.watson.developer_cloud:android-sdk:0.6.0'
 
-    implementation 'com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5'
 }

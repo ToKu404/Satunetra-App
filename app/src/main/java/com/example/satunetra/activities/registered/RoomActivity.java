@@ -3,8 +3,9 @@ package com.example.satunetra.activities.registered;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,42 +16,35 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.satunetra.R;
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants;
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer;
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener;
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerListener;
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-
-import pl.droidsonroids.gif.GifImageView;
 
 public class RoomActivity extends AppCompatActivity implements View.OnTouchListener {
 
     private GestureDetector mGestureDetector;
     private ImageView ivPause;
-    private YouTubePlayer player;
+    private MediaPlayer mediaPlayer;
     private ProgressBar pbRoom;
     private LinearLayout llRoom;
     private TextView titleInstruction;
-    private int sesi = 1;
-    private boolean isPlay = false;
+    private int sesi;
     private ArrayList<String> links;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room);
 
+        sesi = 1;
+
         ConstraintLayout btnGesture = findViewById(R.id.btn_gestur_room);
         mGestureDetector = new GestureDetector(this, new GestureListener());
 
-        YouTubePlayerView ypvRoom = findViewById(R.id.ypv_room);
         btnGesture = findViewById(R.id.btn_gestur_room);
         ivPause = findViewById(R.id.iv_not_speech_chat);
         TextView roomName = findViewById(R.id.tv_room_name);
         titleInstruction = findViewById(R.id.tv_room_title);
+
+        mediaPlayer = new MediaPlayer();
 
         llRoom = findViewById(R.id.ll_voice_chat);
         pbRoom = findViewById(R.id.pb_room);
@@ -63,41 +57,29 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
 
         roomName.setText(type.toUpperCase());
 
-        getLifecycle().addObserver(ypvRoom);
-
         btnGesture.setOnTouchListener(this);
 
-        ypvRoom.getPlayerUiController();
-
-
-        ypvRoom.addYouTubePlayerListener(new AbstractYouTubePlayerListener() {
+        new Handler().postDelayed(new Runnable(){
             @Override
-            public void onReady(@NotNull YouTubePlayer youTubePlayer) {
-                player = youTubePlayer;
+            public void run() {
                 pbRoom.setVisibility(View.GONE);
                 llRoom.setVisibility(View.VISIBLE);
                 playVideo();
-                super.onReady(youTubePlayer);
-            }
+            }},300);
 
-
-
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
-            public void onStateChange(@NotNull YouTubePlayer youTubePlayer, PlayerConstants.@NotNull PlayerState state)
-            {
-                if(state == PlayerConstants.PlayerState.ENDED){
-                    if(sesi<=links.size()){
-                        sesi++;
-                        playVideo();
-                    }else{
-                        onBackPressed();
-                    }
+            public void onCompletion(MediaPlayer mp) {
+                if(sesi<=links.size()){
+                    sesi++;
+                    playVideo();
+                }else{
+                    onBackPressed();
                 }
-                super.onStateChange(youTubePlayer, state);
             }
-
         });
     }
+
 
 
     @Override
@@ -114,15 +96,12 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
             //pause
-            if(player!=null){
-                System.out.println("PAUSE");
-               if(isPlay){
-                   isPlay = false;
-                   player.pause();
+            if(mediaPlayer!=null){
+               if(mediaPlayer.isPlaying()){
+                   mediaPlayer.pause();
                    ivPause.setImageResource(R.drawable.ic_baseline_play_circle_filled_24);
                }else{
-                   isPlay = true;
-                   player.play();
+                   mediaPlayer.start();
                    ivPause.setImageResource(R.drawable.ic_baseline_pause_circle_filled_24);
                }
             }
@@ -165,17 +144,24 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
     private void playVideo(){
-        String link = links.get(sesi-1);
-        titleInstruction.setText("SESI "+sesi);
-        player.pause();
-        player.loadVideo(link,0);
-        player.play();
-        isPlay = true;
+        try {
+            pbRoom.setVisibility(View.GONE);
+            llRoom.setVisibility(View.VISIBLE);
+            String link = links.get(sesi-1);
+            titleInstruction.setText("SESI "+sesi);
+            mediaPlayer.setDataSource(link);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+        }catch (Exception exception){
+            Toast.makeText(this, exception.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        mediaPlayer.reset();
+        mediaPlayer.stop();
         finish();
     }
 }
