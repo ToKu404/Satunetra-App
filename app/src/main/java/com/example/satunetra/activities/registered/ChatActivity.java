@@ -119,6 +119,8 @@ public class ChatActivity extends AppCompatActivity {
     private boolean exitNow;
     //0=m from bot, 1=m from user
     private boolean initalRequest;
+    //deep of chat
+    private int deep;
 
 
     @Override
@@ -151,6 +153,7 @@ public class ChatActivity extends AppCompatActivity {
         feelKey = "";
         instructionValue = "";
         feelValue = "";
+        deep = 0;
         tagMap=new HashMap<>();
 
         readData();
@@ -172,6 +175,7 @@ public class ChatActivity extends AppCompatActivity {
                     letsPlay = false;
                     initalRequest = true;
                     isTimer = false;
+                    deep = 0;
                     startSpeak("Proses Dibatalkan");
                     llVoiceChat.setVisibility(View.VISIBLE);
                     llTiming.setVisibility(View.GONE);
@@ -212,7 +216,6 @@ public class ChatActivity extends AppCompatActivity {
         if(!firstInit) {
             userMessage = "";
             sendMessage();
-            firstInit = true;
         }
 
     }
@@ -458,6 +461,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onStart() {
         readyToExit = false;
         exitNow = false;
+        deep = 0;
         test = new ArrayList<>();
         if(cTimer!=null)
             cTimer.cancel();
@@ -571,10 +575,6 @@ public class ChatActivity extends AppCompatActivity {
 
     private void updateRecycler() {
         chatAdapter.notifyDataSetChanged();
-//        if(chatAdapter.getItemCount()>1){
-//            Objects.requireNonNull(recyclerView.getLayoutManager()).scrollToPosition(chatAdapter.getItemCount()-1);
-////            Objects.requireNonNull(recyclerView.getLayoutManager()).smoothScrollToPosition(recyclerView, new RecyclerView.State(), chatAdapter.getItemCount()-1);
-//        }
     }
 
     //configure bot message edit
@@ -597,35 +597,50 @@ public class ChatActivity extends AppCompatActivity {
             }
             tempMessage += greetings[4];
         }
-        if(afterInstruction){
-            switch (botTagNow) {
-                case "ya":
-                    afterInstruction = false;
-                    break;
-                case "riwayat":
-                    //show history
-                    tempMessage = helper.readHistory();
-                    break;
-                case "tidak":
-                    exitNow = false;
-                    readyToExit = true;
-                    break;
-            }
-        }
-
-        if(tagMap.containsKey(botTagNow.trim())){
-            feelKey = botTagNow;
-        }
-        if(tagMap.get(feelKey)!=null && tagMap.get(feelKey).childEquals(botTagNow.trim())){
-            letsPlay = true;
-            instructionKey = botTagNow;
-        }
-//                            if(!feelKey.equals("")&&botTagNow.equals("tidak")){
-//                                exitNow = true;
-//                                readyToExit = true;
-//                            }
-        if(userMessage.equals("")){
-            tempMessage = String.format(tempMessage, name);
+        switch (deep){
+            case 0:
+                if(userMessage.equals("")){
+                    tempMessage = String.format(tempMessage, name);
+                }
+                if(afterInstruction){
+                    switch (botTagNow) {
+                        case "ya":
+                            afterInstruction = false;
+                            break;
+                        case "riwayat":
+                            //show history
+                            tempMessage = helper.readHistory();
+                            break;
+                        case "tidak":
+                            exitNow = false;
+                            readyToExit = true;
+                            break;
+                    }
+                }
+                if(tagMap.containsKey(botTagNow.trim())){
+                    feelKey = botTagNow;
+                    deep = 1;
+                }
+                break;
+            case 1:
+                switch (botTagNow){
+                    case "ya":
+                        deep = 2;
+                        break;
+                    case "tidak":
+                        exitNow = true;
+                        readyToExit = true;
+                        deep = 0;
+                        break;
+                }
+                break;
+            case 2:
+                if(tagMap.get(feelKey).childEquals(botTagNow.trim())){
+                    deep = 3;
+                    letsPlay = true;
+                    instructionKey = botTagNow;
+                }
+                break;
         }
         return  tempMessage;
     }
