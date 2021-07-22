@@ -37,6 +37,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
+import pl.droidsonroids.gif.GifImageView;
+
 public class ExitActivity extends AppCompatActivity {
 
     private TextToSpeech tts;
@@ -44,6 +46,7 @@ public class ExitActivity extends AppCompatActivity {
     private String bot_message = "";
     private SpeechRecognizer speechRecognizer;
     private Intent speechIntent;
+    private GifImageView exitGif;
     private boolean exitNow = false;
 
     @Override
@@ -52,6 +55,7 @@ public class ExitActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         tvRegister = findViewById(R.id.tv_register);
+        exitGif = findViewById(R.id.gif_exit);
 
         configureSpeechRecognition();
         configureTextToSpeech();
@@ -74,6 +78,7 @@ public class ExitActivity extends AppCompatActivity {
 
                             public void run()
                             {
+
                                 if(exitNow){
                                     new Handler().postDelayed(new Runnable(){
                                         @Override
@@ -102,7 +107,8 @@ public class ExitActivity extends AppCompatActivity {
 
     private void beriUlasan() {
         bot_message = "Sebelum keluar dari aplikasi ini kami sangat mengharapkan anda memberikan ulasan mengenai aplikasi ini, seperti bagaimana perasaan anda setelah konsultasi, mohon beri ulasan setelah nada bip";
-        tvRegister.setText("Ulasan");
+        tvRegister.setVisibility(View.GONE);
+        exitGif.setVisibility(View.VISIBLE);
         new Handler().postDelayed(new Runnable(){
             @Override
             public void run() {
@@ -171,6 +177,8 @@ public class ExitActivity extends AppCompatActivity {
             String string = "...";
             if(matches!=null) {
                 string = matches.get(0);
+                exitGif.setVisibility(View.GONE);
+                tvRegister.setVisibility(View.VISIBLE);
                 tvRegister.setText(string);
                 simpanUlasan(string);
             }
@@ -195,7 +203,7 @@ public class ExitActivity extends AppCompatActivity {
             @Override
             public void run() {
                 readData();
-            }},300);
+            }},500);
 
     }
 

@@ -15,6 +15,8 @@ import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -60,14 +62,15 @@ import java.util.Objects;
 import pl.droidsonroids.gif.GifImageView;
 
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity implements View.OnTouchListener {
     //insialize widget
     //for layout
-    private ConstraintLayout btnStartChat;
+    private View btnStartChat;
     private TextView tvUserChat, tvTimer;
     private GifImageView ivIsSpeech;
     private ImageView ivNotSpeech, ivMic;
     private LinearLayout llVoiceChat, llTiming;
+    private GestureDetector gestureDetector;
 
     //for local db
     private RoomHelper helper;
@@ -122,6 +125,10 @@ public class ChatActivity extends AppCompatActivity {
     //deep of chat
     private int deep;
 
+    //const
+    private static final int SWIPE_THRESHOLD = 100;
+    private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,34 +162,36 @@ public class ChatActivity extends AppCompatActivity {
         feelValue = "";
         deep = 0;
         tagMap=new HashMap<>();
+        gestureDetector = new GestureDetector(this, new GestureListener());
 
         readData();
-        btnStartChat.setEnabled(false);
-        btnStartChat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!isTimer){
-                    if(nowSpeak){
-                        tts.stop();
-                        nowSpeak = false;
-                    }else{
-                        speechRecognizer.startListening(speechIntent);
-                        refreshSpeechUI(false, true);
-                    }
-                }else {
-                    if(cTimer!=null)
-                        cTimer.cancel();
-                    letsPlay = false;
-                    initalRequest = true;
-                    isTimer = false;
-                    deep = 0;
-                    startSpeak("Proses Dibatalkan");
-                    llVoiceChat.setVisibility(View.VISIBLE);
-                    llTiming.setVisibility(View.GONE);
-                }
-
-            }
-        });
+//        btnStartChat.setEnabled(false);
+        btnStartChat.setOnTouchListener(this);
+//        btnStartChat.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if(!isTimer){
+//                    if(nowSpeak){
+//                        tts.stop();
+//                        nowSpeak = false;
+//                    }else{
+//                        speechRecognizer.startListening(speechIntent);
+//                        refreshSpeechUI(false, true);
+//                    }
+//                }else {
+//                    if(cTimer!=null)
+//                        cTimer.cancel();
+//                    letsPlay = false;
+//                    initalRequest = true;
+//                    isTimer = false;
+//                    deep = 0;
+//                    startSpeak("Proses Dibatalkan");
+//                    llVoiceChat.setVisibility(View.VISIBLE);
+//                    llTiming.setVisibility(View.GONE);
+//                }
+//
+//            }
+//        });
 
 
         //instance
@@ -195,7 +204,6 @@ public class ChatActivity extends AppCompatActivity {
         chatAdapter = new ChatAdapter(messageArrayList);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
-        recyclerView.smoothScrollToPosition(chatAdapter.getItemCount()-1);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(chatAdapter);
@@ -241,6 +249,15 @@ public class ChatActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if(v.getId() == R.id.btn_gestur_chat){
+            gestureDetector.onTouchEvent(event);
+            return true;
+        }
+        return false;
     }
 
 
@@ -379,30 +396,20 @@ public class ChatActivity extends AppCompatActivity {
                             public void run()
                             {
                                 nowSpeak = false;
-                                if(readyToExit){
-                                    if(exitNow){
-                                        System.exit(0);
-                                    }else{
-                                        Intent readyToExit = new Intent(ChatActivity.this, ExitActivity.class);
-                                        startActivity(readyToExit);
-                                    }
-                                    finish();
-                                }else{
-                                    btnStartChat.setEnabled(true);
-                                    tvUserChat.setText("...");
-                                    refreshSpeechUI(false, false);
-                                    if(initalRequest){
-                                        userMessage = "";
-                                        instructionKey = "";
-                                        feelKey = "";
-                                        sendMessage();
-                                    }
-                                    if(letsPlay){
-                                        loadPlayData();
-                                    }
+                                btnStartChat.setEnabled(true);
+                                tvUserChat.setText("...");
+                                refreshSpeechUI(false, false);
+                                if(initalRequest){
+                                    userMessage = "";
+                                    instructionKey = "";
+                                    feelKey = "";
+                                    sendMessage();
                                 }
-
+                                if(letsPlay){
+                                    loadPlayData();
+                                }
                             }
+
                         });
                     }
                 }.start();
@@ -461,7 +468,6 @@ public class ChatActivity extends AppCompatActivity {
     protected void onStart() {
         readyToExit = false;
         exitNow = false;
-        deep = 0;
         test = new ArrayList<>();
         if(cTimer!=null)
             cTimer.cancel();
@@ -474,6 +480,8 @@ public class ChatActivity extends AppCompatActivity {
             initalRequest = true;
             userMessage = "#selesai";
             sendMessage();
+        }else{
+            deep = 0;
         }
         super.onStart();
     }
@@ -524,7 +532,7 @@ public class ChatActivity extends AppCompatActivity {
                 inputMessage.setMessage(userMessage);
                 inputMessage.setId("1");
                 messageArrayList.add(inputMessage);
-                updateRecycler();
+                updateChatRoom();
             }else{
                 initalRequest = false;
             }
@@ -562,7 +570,7 @@ public class ChatActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            updateRecycler();
+                            updateChatRoom();
                         }
                     });
                 }catch (Exception e){
@@ -573,9 +581,13 @@ public class ChatActivity extends AppCompatActivity {
         thread.start();
     }
 
-    private void updateRecycler() {
+    private void updateChatRoom() {
         chatAdapter.notifyDataSetChanged();
+        if (chatAdapter.getItemCount() > 1) {
+            recyclerView.getLayoutManager().smoothScrollToPosition(recyclerView, null, chatAdapter.getItemCount() - 1);
+        }
     }
+
 
     //configure bot message edit
     private String configureResponse(String botMessage, String botTagNow) {
@@ -602,21 +614,7 @@ public class ChatActivity extends AppCompatActivity {
                 if(userMessage.equals("")){
                     tempMessage = String.format(tempMessage, name);
                 }
-                if(afterInstruction){
-                    switch (botTagNow) {
-                        case "ya":
-                            afterInstruction = false;
-                            break;
-                        case "riwayat":
-                            //show history
-                            tempMessage = helper.readHistory();
-                            break;
-                        case "tidak":
-                            exitNow = false;
-                            readyToExit = true;
-                            break;
-                    }
-                }
+
                 if(tagMap.containsKey(botTagNow.trim())){
                     feelKey = botTagNow;
                     deep = 1;
@@ -628,9 +626,7 @@ public class ChatActivity extends AppCompatActivity {
                         deep = 2;
                         break;
                     case "tidak":
-                        exitNow = true;
                         readyToExit = true;
-                        deep = 0;
                         break;
                 }
                 break;
@@ -641,7 +637,106 @@ public class ChatActivity extends AppCompatActivity {
                     instructionKey = botTagNow;
                 }
                 break;
+            case 3:
+                if(afterInstruction){
+                    readyToExit = true;
+                    switch (botTagNow) {
+                        case "ya":
+                            afterInstruction = false;
+                            deep = 0;
+                            break;
+                        case "riwayat":
+                            //show history
+                            afterInstruction = false;
+                            tempMessage = helper.readHistory();
+                            deep = 4;
+                            break;
+                    }
+                }
+                break;
+            case 4:
+                readyToExit = true;
+                if(botTagNow.equals("ya")){
+                    afterInstruction = false;
+                    deep = 0;
+                }
+                break;
         }
         return  tempMessage;
+    }
+
+
+
+    class GestureListener extends GestureDetector.SimpleOnGestureListener{
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            if(deep<=4){
+                if(!isTimer){
+                    if(nowSpeak){
+                        tts.stop();
+                        nowSpeak = false;
+                    }else{
+                        speechRecognizer.startListening(speechIntent);
+                        refreshSpeechUI(false, true);
+                    }
+                }else {
+                    if(cTimer!=null)
+                        cTimer.cancel();
+                    letsPlay = false;
+                    initalRequest = true;
+                    isTimer = false;
+                    deep = 0;
+                    startSpeak("Proses Dibatalkan");
+                    llVoiceChat.setVisibility(View.VISIBLE);
+                    llTiming.setVisibility(View.GONE);
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            boolean result = false;
+            try {
+                float diffY = e2.getY() - e1.getY();
+                float diffX = e2.getX() - e1.getX();
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        //swipe from left to right
+                        if (diffX > 0) {
+                            if(readyToExit){
+                                switch (deep){
+                                    case 1:
+                                        System.exit(1);
+                                        finish();
+                                        break;
+                                    case 3:
+                                    case 4:
+                                        Intent readyToExit = new Intent(ChatActivity.this, ExitActivity.class);
+                                        startActivity(readyToExit);
+                                        finish();
+                                        break;
+                                }
+                            }
+                        }
+                        result = true;
+                    }
+                }else{
+                    if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                        if(diffY > 0){
+                            deep = 0;
+                            initalRequest = true;
+                            userMessage = "";
+                            sendMessage();
+                        }
+                        result = true;
+                    }
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
+            return result;
+        }
     }
 }

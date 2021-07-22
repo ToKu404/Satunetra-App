@@ -11,14 +11,11 @@ import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.satunetra.R;
 import com.example.satunetra.activities.registered.ChatActivity;
@@ -42,7 +39,7 @@ import pl.droidsonroids.gif.GifImageView;
 public class InputNameActivity extends AppCompatActivity implements View.OnTouchListener{
     //declaration of widget
     private TextToSpeech tts;
-    private LinearLayout btnVoice;
+    private View btnVoice;
     private SpeechRecognizer speechRecognizer;
     private Intent speechIntent;
     private GifImageView ivIsSpeech;
@@ -201,7 +198,7 @@ public class InputNameActivity extends AppCompatActivity implements View.OnTouch
 
     private void configureSpeechRecognition() {
         //Instance SR
-        SpeechHelper helper = new SpeechHelper(this, 300);
+        SpeechHelper helper = new SpeechHelper(this, 100);
         speechRecognizer = helper.getSpeechRecognizer();
         speechIntent = helper.getSpeechIntent();
         speechRecognizer.setRecognitionListener(new MyRecognitionListener());

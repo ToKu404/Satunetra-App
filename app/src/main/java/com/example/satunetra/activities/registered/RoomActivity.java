@@ -53,6 +53,10 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
         llRoom.setVisibility(View.GONE);
 
         links = getIntent().getStringArrayListExtra("link");
+        System.out.println(links.size());
+        for(String link:links){
+            System.out.println(link);
+        }
         String type = getIntent().getStringExtra("type");
 
         roomName.setText(type.toUpperCase());
@@ -62,8 +66,6 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
         new Handler().postDelayed(new Runnable(){
             @Override
             public void run() {
-                pbRoom.setVisibility(View.GONE);
-                llRoom.setVisibility(View.VISIBLE);
                 playVideo();
             }},300);
 
@@ -124,8 +126,16 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
                                 playVideo();
                             }else{
                                 Toast.makeText(RoomActivity.this, "INI SESI TERAKHIR", Toast.LENGTH_SHORT).show();
+                                onBackPressed();
                             }
 
+                        }else{
+                            if(sesi>=1){
+                                sesi--;
+                                playVideo();
+                            }else{
+                                Toast.makeText(RoomActivity.this, "INI SESI PERTAMA", Toast.LENGTH_SHORT).show();
+                            }
                         }
                         result = true;
                     }
@@ -145,23 +155,32 @@ public class RoomActivity extends AppCompatActivity implements View.OnTouchListe
 
     private void playVideo(){
         try {
-            pbRoom.setVisibility(View.GONE);
-            llRoom.setVisibility(View.VISIBLE);
             String link = links.get(sesi-1);
             titleInstruction.setText("SESI "+sesi);
+            mediaPlayer.stop();
+            mediaPlayer.reset();
             mediaPlayer.setDataSource(link);
-            mediaPlayer.prepare();
-            mediaPlayer.start();
+            mediaPlayer.prepareAsync();
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    if(sesi==1){
+                        pbRoom.setVisibility(View.GONE);
+                        llRoom.setVisibility(View.VISIBLE);
+                    }
+                    mp.start();
+                }
+            });
         }catch (Exception exception){
-            Toast.makeText(this, exception.getMessage(), Toast.LENGTH_SHORT).show();
+            System.out.println(links.size());
         }
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        mediaPlayer.reset();
         mediaPlayer.stop();
+        mediaPlayer.reset();
         finish();
     }
 }

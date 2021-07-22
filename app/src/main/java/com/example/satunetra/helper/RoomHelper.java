@@ -30,10 +30,11 @@ public class RoomHelper {
     public String readHistory(){
         StringBuilder temp = new StringBuilder("Berikut Riwayat Konsultasi Anda : \n");
         for(ConsulEntity riwayat : roomDb.userDao().getHistory()){
-            temp.append(riwayat.getDate()).append(" ");
+            temp.append(riwayat.getDate()).append(": ");
             temp.append("Anda Merasa ").append(riwayat.getFeel());
             temp.append(" Dan Kami memutarkan Anda ").append(riwayat.getInstruction()).append(" .\n");
         }
+        temp.append("\nUcapkan \"Ya\" jika anda ingin melanjutkan sesi obrolan. Jika anda ingin berhenti menggunakan aplikasi usap layar dari kiri ke kanan.");
         return temp.toString();
     }
 
